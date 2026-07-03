@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国近现代史题库 - 答题刷题系统</title>
+<style>
+/* ===== Reset & Variables ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #b91c1c;
+  --primary-light: #ef4444;
+  --success: #16a34a;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Serif SC", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ===== Layout ===== */
+.app { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+/* ===== Header ===== */
+.header {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.header h1 { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+.header-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.header-stats span { white-space: nowrap; }
+.header-stats strong { color: var(--text); }
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); background: #f8fafc; }
+.tab.active { background: var(--primary); color: white; }
+
+/* ===== Card ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Filters ===== */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.filter-btn:hover { border-color: var(--primary-light); color: var(--primary); }
+.filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.filter-separator { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+.search-input {
+  flex: 1;
+  min-width: 160px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--primary); }
+.random-btn {
+  padding: 8px 18px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.random-btn:hover { background: var(--primary-light); }
+
+/* ===== Question Card ===== */
+.question-card { transition: all 0.3s; }
+.question-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.question-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-single { background: #fee2e2; color: #b91c1c; }
+.badge-multi { background: #fef3c7; color: #92400e; }
+.badge-tf { background: #dbeafe; color: #1e40af; }
+.question-number { font-size: 0.85rem; color: var(--text-secondary); }
+.question-text {
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  line-height: 1.7;
+}
+
+/* ===== Options ===== */
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option {
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  position: relative;
+  user-select: none;
+}
+.option:hover { border-color: var(--primary-light); background: #f8fafc; }
+.option.selected { border-color: var(--primary); background: #eef2ff; }
+.option.correct { border-color: var(--success); background: #ecfdf5; }
+.option.wrong { border-color: var(--danger); background: #fef2f2; }
+.option.correct::after { content: " ✓"; color: var(--success); font-weight: bold; }
+.option.wrong::after { content: " ✗"; color: var(--danger); font-weight: bold; }
+.option.show-correct:not(.correct):not(.wrong) { opacity: 0.6; }
+.option:disabled { cursor: default; pointer-events: none; }
+
+/* ===== Submit Button ===== */
+.submit-area { text-align: center; margin: 16px 0 8px 0; }
+.submit-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 14px 32px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);
+}
+.submit-btn:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(185, 28, 28, 0.4); }
+.submit-btn:disabled { opacity: 0.7; cursor: default; transform: none; box-shadow: none; }
+.submit-btn.correct { background: var(--success); box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); }
+.submit-btn.wrong { background: var(--danger); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3); }
+
+/* ===== Quiz Question Block ===== */
+.quiz-question-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 16px;
+  background: #fafbfc;
+  transition: border-color 0.3s;
+}
+.quiz-question-block .options { margin-top: 12px; }
+.quiz-question-block .option { cursor: pointer; }
+
+/* ===== Answer Reveal ===== */
+.answer-reveal {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  display: none;
+}
+.answer-reveal.show { display: block; }
+.answer-reveal.wrong-reveal { background: #fef2f2; border-color: #fecaca; }
+.answer-reveal .label { font-weight: 600; margin-right: 8px; }
+
+/* ===== Grade Banner ===== */
+.grade-banner { padding: 4px 0; }
+.grade-banner .grade-icon { font-size: 1.5rem; margin-right: 8px; }
+.grade-banner .grade-text { font-size: 1.1rem; font-weight: 700; margin-right: 12px; }
+.grade-correct { background: #ecfdf5 !important; border-color: #6ee7b7 !important; }
+.grade-wrong { background: #fef2f2 !important; border-color: #fca5a5 !important; }
+.grade-compare { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.grade-row { display: flex; align-items: center; gap: 6px; font-size: 0.95rem; }
+.grade-label { color: var(--text-secondary); }
+.grade-val { font-weight: 700; }
+.wrong-val { color: var(--danger); }
+.correct-val { color: var(--success); }
+
+/* ===== Result Buttons ===== */
+.correct-btn { background: var(--success) !important; border-color: var(--success) !important; color: white !important; }
+.wrong-btn { background: var(--danger) !important; border-color: var(--danger) !important; color: white !important; }
+
+/* ===== Navigation ===== */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.nav-btn {
+  padding: 10px 24px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-btn:hover { background: #f8fafc; border-color: var(--primary-light); }
+.nav-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+.nav-btn.primary:hover { background: var(--primary-light); }
+.nav-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+.nav-center { display: flex; gap: 8px; align-items: center; }
+
+/* ===== Quiz Mode ===== */
+.quiz-setup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.quiz-setup label { font-size: 0.9rem; font-weight: 500; }
+.quiz-setup select, .quiz-setup input {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+}
+.quiz-setup select:focus, .quiz-setup input:focus { border-color: var(--primary); }
+.quiz-timer {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+  padding: 8px;
+}
+.quiz-timer.warning { color: var(--danger); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* ===== Results ===== */
+.results { text-align: center; padding: 40px 20px; }
+.results .score {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+.results .score.good { color: var(--success); }
+.results .score.ok { color: var(--warning); }
+.results .score.bad { color: var(--danger); }
+.results .detail {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.results .detail-item { text-align: center; }
+.results .detail-item .num { font-size: 1.5rem; font-weight: 700; }
+.results .detail-item .lbl { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* ===== Progress ===== */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+/* ===== Stats ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-card .stat-num { font-size: 1.8rem; font-weight: 700; }
+.stat-card .stat-lbl { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
+.stat-card.single-stat .stat-num { color: #b91c1c; }
+.stat-card.multi-stat .stat-num { color: #92400e; }
+.stat-card.tf-stat .stat-num { color: #065f46; }
+.stat-card.total-stat .stat-num { color: var(--primary); }
+
+/* ===== Question List ===== */
+.question-list-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.question-list-item:hover { background: #f8fafc; }
+.question-list-item .idx { font-weight: 600; color: var(--text-secondary); min-width: 30px; }
+.question-list-item .preview { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.question-list-empty { text-align: center; padding: 40px; color: var(--text-secondary); }
+
+/* ===== Utility ===== */
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .app { padding: 8px; }
+  .header { padding: 12px 16px; }
+  .header h1 { font-size: 1.1rem; }
+  .card { padding: 16px; }
+  .tab { padding: 8px 10px; font-size: 0.8rem; }
+  .filters { gap: 4px; }
+  .filter-btn { padding: 5px 10px; font-size: 0.78rem; }
+  .option { padding: 10px 12px; font-size: 0.9rem; }
+  .question-text { font-size: 0.95rem; }
+  .nav-btn { padding: 8px 16px; font-size: 0.85rem; }
+  .results .score { font-size: 2.2rem; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>📜 中国近现代史题库</h1>
+    <div class="header-stats">
+      <span>题库: <strong id="total-count">940</strong> 题</span>
+      <span>已做: <strong id="done-count">0</strong> 题</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="practice" onclick="switchTab('practice')">📝 刷题模式</button>
+    <button class="tab" data-tab="quiz" onclick="switchTab('quiz')">🏆 答题模式</button>
+    <button class="tab" data-tab="browse" onclick="switchTab('browse')">📋 题库浏览</button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 学习统计</button>
+  </div>
+
+  <!-- Tab content containers -->
+  <div id="tab-practice"></div>
+  <div id="tab-quiz" class="hidden"></div>
+  <div id="tab-browse" class="hidden"></div>
+  <div id="tab-stats" class="hidden"></div>
+</div>
+
+<script>
+const QUESTION_BANK = [{"id": 1, "type": "single", "question": "1962年中共八届十中全会上，毛泽东把社会主义社会中一定范围内存在的阶级斗争 扩大化和绝对化，后来更发展成为（）的指导思想", "options": ["A. 四个现代化", "B. 农业六十条", "C. 大跃进", "D. 以阶级斗争为纲"], "answer": ["D"]}, {"id": 2, "type": "single", "question": "（）中国正式加入世界贸易组织", "options": ["A. 1999年", "B. 2000年", "C. 2001年", "D. 2002 年"], "answer": ["C"]}, {"id": 3, "type": "single", "question": "哪一本经典系统闸述了抗日战争的发展规律和坚持抗战、争取抗战胜利必须实行的 战略总方针，是中国共产党领导抗日战争的纲领性文件： 0", "options": ["A. 《中国革命和中国共产党》", "B. 《论持久战》", "C. 《游击战》", "D. 《阵地战》"], "answer": ["B"]}, {"id": 4, "type": "single", "question": "中国共产党创建初期，其主要精力是放在： ) 题小", "options": ["A. 发展党的组织", "B. 发动工人运动", "C. 解决农民问题", "D. 开展军事斗争"], "answer": ["B"]}, {"id": 5, "type": "single", "question": "清末\"预备立宪\"的根本目的在于： ()", "options": ["A. 仿效欧美政体", "B. 发展资本主义", "C. 延续反动统治", "D. 缓和阶级矛盾"], "answer": ["C"]}, {"id": 6, "type": "single", "question": "抗日战争胜利后，国内的主要矛盾是： ()", "options": ["A. 和平民主与内战独裁之间的矛盾", "B. 国共两党之间的矛盾", "C. 以共产党为代表的人民大众同以国民党统治集团为代表的大地主大资产阶级之间的矛盾", "D. 工人阶级同资产阶级的矛盾"], "answer": ["C"]}, {"id": 7, "type": "single", "question": "护国运动开始时，回云南发动反袁战争的是：（）", "options": ["A. 孙中山", "B. 唐继尧", "C. 蔡锷", "D. 黄兴"], "answer": ["C"]}, {"id": 8, "type": "single", "question": "杭战胜利后，为打败国民党反动派，在党的领导下建立了最广泛的（）。", "options": ["A. 国民革命联合战线", "B. 抗日民族统一战线", "C. 人民民主统一战线", "D. 反帝爱国统一战线"], "answer": ["C"]}, {"id": 9, "type": "single", "question": "袁世凯为复辟帝制不惜出卖主权，与日本签订了卖国的0", "options": ["A. 中日共同防敌军事协定", "B. \"二十一条”", "C. 承认外蒙自治", "D. 出让川汉、粤汉铁路"], "answer": ["B"]}, {"id": 10, "type": "single", "question": "新文化运动产生的基本条件不包括：（）", "options": ["A. 俄国十月社会主义革命的影响", "B. 北洋军阀掀起复古倒退的思潮", "C. 资产阶级强烈要求政治上民主", "D. 西方启蒙思想不断介绍到中国"], "answer": ["A"]}, {"id": 11, "type": "single", "question": "对\"民权主义\"理解正确的是： ()", "options": ["A. 推翻清三朝的封建专制统治", "B. B进行政治革命，推翻封建帝制，建立资产阶级共和国", "C. 平均地权、核定地价", "D. 打击帝国主义在华势力"], "answer": ["B"]}, {"id": 12, "type": "single", "question": "1979年3月30日，（）在中央理论工作务虚会上首次提出四项基本原则必须坚 持。", "options": ["A. 毛泽东", "B. 邓小平", "C. 江泽民", "D. 胡锦涛"], "answer": ["B"]}, {"id": 13, "type": "single", "question": "\"批林批孔\"运动的矛头指向： (0", "options": ["A. 邓小平", "B. 周恩来", "C. 李先念", "D. 毛泽东"], "answer": ["B"]}, {"id": 14, "type": "single", "question": "\"改革是中国的第二次革命\"是从（)", "options": ["A. 扫除发展社会生产力的障碍这个意义上说的", "B. 对社会各个方面要进行根本性变革的意义上说的", "C. 根本上改变末缚我国生产力的经济体制意义上说的", "D. 根本上改变束缚我国生产力的政治体制意义上说的"], "answer": ["A"]}, {"id": 15, "type": "single", "question": "1935年12月，中共中央在（）召开的政治局会议上，提出了在抗日条件下与民 族资产阶级重建民族统一战线的新政策，批评了党内长期存在的\"左倾\"冒险主义、关门主义 的错误倾向。", "options": ["A. 洛川会议", "B. 两河口会议", "C. 瓦密堡会议", "D. 巴西会议"], "answer": ["C"]}, {"id": 16, "type": "single", "question": "1970年，毛泽东在准备召开的第四届全国人民代表大会上，建议不设：（）", "options": ["A. 国务总理", "B. 国家主席", "C. 国家副主席", "D. 党委书记"], "answer": ["B"]}, {"id": 17, "type": "single", "question": "2013年3月，习近平总书记在莫斯科国际关系学院发表演讲，首次提出人类命运 (）理念。", "options": ["A. 联合体", "B. 同一体", "C. 结合体", "D. 共同体"], "answer": ["D"]}, {"id": 18, "type": "single", "question": "私人资本主义经济向国营经济过渡的形式是： (0", "options": ["A. 半社会主义性质的合作社经济", "B. 社会主义性质的国营经济", "C. 农民和手工业者的个体经济", "D. 国家资本主义经济"], "answer": ["D"]}, {"id": 19, "type": "single", "question": "文化大革命的指导方针是： O 小程序", "options": ["A. 《关于无产阶级文化大革命的决定》", "B. 《矛盾论》", "C. 《炮打司令部》", "D. 《解放思想，实事求是》"], "answer": ["A"]}, {"id": 20, "type": "single", "question": "手工业合作化的组织形式，步骤是从（）入手 信席", "options": ["A. 供销", "B. 发展", "C. 生产", "D. 增产增收"], "answer": ["A"]}, {"id": 21, "type": "single", "question": "邓小平理论在（）被写入党章", "options": ["A. \"十四届六中全会”", "B. \"十四大\"", "C. \"十五大\"", "D. \"十六大"], "answer": ["C"]}, {"id": 22, "type": "single", "question": "个体经济向社会主义集体经济过渡的形式是：（)", "options": ["A. 半社会主义性质的合作社经济", "B. 社会主义性质的国营经济", "C. 农民和手工业者的个体经济", "D. 私人资本主义经济"], "answer": ["A"]}, {"id": 23, "type": "single", "question": "家庭联产承包责任制： 0", "options": ["A. 是对生产资料所有制的重要变革", "B. 是农村经济体制改革的最高形式", "C. 是长期农村改革经验的总结", "D. 适应了我国农村生产力的水亚"], "answer": ["D"]}, {"id": 24, "type": "single", "question": "没收官僚资本，在全国范围内展开，是在： ) 程序", "options": ["A. 新中国成立后", "B. 解放战争初期", "C. 抗日战争时期", "D. 1956年以后"], "answer": ["A"]}, {"id": 25, "type": "single", "question": "农民走向社会主义的几种过渡性经济组织形式中，具有社会主义性质的是： () S IE", "options": ["A. 初级农业生产合作社", "B. 高级农业生产合作社", "C. 互助组", "D. 小农经济"], "answer": ["B"]}, {"id": 26, "type": "single", "question": "1928年蒋介石在南京建立政权，其性质是： ()", "options": ["A. 地主阶级政权", "B. 官僚资产阶级政权", "C. 资产阶级政权", "D. 大地主大资产阶级政权"], "answer": ["D"]}, {"id": 27, "type": "single", "question": "1919-1949年，中国社会经济生活中依旧占优势的是： 0", "options": ["A. 外国资本主义经济", "B. 民族资本主义经济", "C. 封建经济", "D. 官僚资本主义经济"], "answer": ["C"]}, {"id": 28, "type": "single", "question": "1919年7月，发表《多研究些问题，少谈些主义》文章的资产阶级改良主义的代 表是：（） FUL", "options": ["A. 梁启超", "B. 张东荪", "C. 胡适", "D. 黄凌霜"], "answer": ["C"]}, {"id": 29, "type": "single", "question": "1921年9月，经过共产党人的努力，在（）省萧山县衙前村成立了中国第一个农 民协会。", "options": ["A. 浙江", "B. 广东", "C. 湖南", "D. 湖北"], "answer": ["A"]}, {"id": 30, "type": "single", "question": "中国赔款最多的条约是： 0 刷匙", "options": ["A. 《北京条约》", "B. 《望厦条约》", "C. 《马关条约》", "D. 《辛丑条约》"], "answer": ["D"]}, {"id": 31, "type": "single", "question": "1931年11月，毛泽东的主张被指责为\"狭隘的经验论“富农路线\"“极严重的一贯右 倾机会主义\"的会议是（）", "options": ["A. 赣南会议", "B. 八七会议", "C. 中华苏维埃第一次全国代表大会", "D. 中共五大"], "answer": ["A"]}, {"id": 32, "type": "single", "question": "1936年10月，中国工农红军第一、二、四方面军胜利会师于（）", "options": ["A. 陕北保安地区", "B. 陕北洛川地区", "C. 陕北瓦窑堡地", "D. 甘肃会宁、静宁地区"], "answer": ["D"]}, {"id": 33, "type": "single", "question": "\"府院之争\"的激化，从根本上反映了： 0", "options": ["A. 国会内各派政客之间的权力之争", "B. 南北方军阀之间的地盘之争", "C. 是否要参加一战之争", "D. 美国日本对华控制权之争"], "answer": ["D"]}, {"id": 34, "type": "single", "question": "1911 年4月在广州发生的起义所以被称为\"黄花岗起义\"是因为： () 程序", "options": ["A. 起义是在黄花岗发动的", "B. 起义军去进攻设在黄花岗的清军要塞", "C. 起义中牺牲的烈士后被葬在黄花岗", "D. 起义是在黄花岗失败的"], "answer": ["C"]}, {"id": 35, "type": "single", "question": "1911年底，辛亥革命迅速发展的同时也潜伏着失败的危机，这主要是因为：（）", "options": ["A. 缺乏威望较高的革命领袖", "B. 帝国主义列强干涉和破坏革命", "C. 清政府起用狡诈的袁世凯", "D. 立宪派和封建官僚控制了地方政权"], "answer": ["D"]}, {"id": 36, "type": "single", "question": "1912年8月，宋教仁把同盟会改组为： 0", "options": ["A. 中华革命党", "B. 国民党", "C. 共和党", "D. 民主党"], "answer": ["B"]}, {"id": 37, "type": "single", "question": "《海国图志》一书在当时的直接作用是： )", "options": ["A. 引导人们了解外部世界", "B. 探索出了救国救民之路", "C. 批评了封建的统治政筑", "D. 介绍了西方的政治思想"], "answer": ["A"]}, {"id": 38, "type": "single", "question": "揭开维新变法运动序幕的事件是： )", "options": ["A. 康有为第一次上书", "B. 公车上书", "C. \"南学会\"创立", "D. 《孔子改制考》发表"], "answer": ["B"]}, {"id": 39, "type": "single", "question": "近代中国赔款最多的条约是： 0", "options": ["A. 《南京条约》", "B. 《北京条约》", "C. 《马关条约》", "D. 《辛丑条约》"], "answer": ["D"]}, {"id": 40, "type": "single", "question": "早期维新思想同鸦片战争时期新思潮的主要不同是： ()", "options": ["A. 学习外国的科学技术", "B. 学习外国的军事技术", "C. 学习外国的政治制度", "D. 借鉴外国经验，探索救国之路"], "answer": ["C"]}, {"id": 41, "type": "single", "question": "1858年，沙俄侵略者强迫黑龙江将军奕山签订（），将黑龙江以北，外兴安岭以 南60万平方公里的中国领土强行霸占，并把乌苏里江以东的中国领土划为中俄共管。", "options": ["A. 《瑷珲条约》", "B. 《北京条约》", "C. 《中俄勘分西北界约记》", "D. 《天津条约》"], "answer": ["A"]}, {"id": 42, "type": "single", "question": "太平天国运动失败的根本原因是： ()", "options": ["A. 旧式农民战争的局限性", "B. 拜上帝教不合中国国情", "C. 在军事策略上率犯错误", "D. 对封建王朝打击空前沉重"], "answer": ["A"]}, {"id": 43, "type": "single", "question": "提出了\"师夷长技以制夷\"的思想的是：（)", "options": ["A. 林则徐", "B. 魏源", "C. 郑观应", "D. 康有为"], "answer": ["B"]}, {"id": 44, "type": "single", "question": "19世纪末，维新变法从一种思潮得以发展成为一场政治运动，关键是： J马院", "options": ["A. 维新派发展资本主义的主张符合历史发展趋势", "B. 维新派争取到光绪帝的支持", "C. 维新派拥有广泛的阶级基础", "D. 维新派把维新变法与救亡图存结合起来"], "answer": ["D"]}, {"id": 45, "type": "single", "question": "19世纪下半期，沙俄割占中国 150多万平方公里领土，是通过下列哪些不平等条 约实现的:（)", "options": ["A. 《天津条约》、《辛丑条约》、《瑷珲条约》、《勘分西北界约记》", "B. 《瑷珲条约》、《北京条约》、《勘分西北界约记》、《伊犁条约》", "C. 《天津条约》、《南京条约》、《瑷珲条约》、《勘分西北界约记》", "D. 《马关条约》、《北京条约》、《勘分西北界约记》、《伊型条约》"], "answer": ["B"]}, {"id": 46, "type": "single", "question": "党的（）以来，中国特色社会主义进入新时代。0 创题", "options": ["A. 十一届三中全会", "B. 十九大", "C. 十八大", "D. 十九届三中全会"], "answer": ["C"]}, {"id": 47, "type": "single", "question": "帝国主义列强获得了在中国领土上驻兵的特权是通过： O", "options": ["A. 《南京条约》", "B. 《北京条约》", "C. 《马关条约》", "D. 《辛丑条约》"], "answer": ["D"]}, {"id": 48, "type": "single", "question": "中国社会主义制度的确立是在：（)", "options": ["A. 1949年", "B. 1952年", "C. 1956年", "D. 1978年"], "answer": ["C"]}, {"id": 49, "type": "single", "question": "中共十六大召开的时间是： ()", "options": ["A. 2001", "B. 2002", "C. 2003", "D. 2004"], "answer": ["B"]}, {"id": 50, "type": "single", "question": "中共党内从 1958年至1978年出现了连续 20年之久的“左\"倾错误，其原因是：（） 否定了\"八大\"关于社会主义初级阶段主要矛盾的论断②)为改变中国落后的面貌而始终盲目 追求经济建设的高速度3残余的封建思想影响，民主法制不健全和个人崇拜盛行 U马院", "options": ["A. 12", "B. 23", "C. 123", "D. O3"], "answer": ["C"]}, {"id": 51, "type": "single", "question": "华北事变后，中日民族矛盾进一步激化。1935年12月9日，爆发救亡图存的\" 二·九\"运动。对此运动评价正确的是：（）", "options": ["A. 十年内战的局面由此结束，国内和平基本实现。", "B. 它促进了中华民族的觉醒，标志着中国人民抗日救亡运动新高潮的到来。", "C. 实现了与民族资产阶级重建统一战线的新局面。", "D. 蒋介石由此根本改变对日本的态度。"], "answer": ["B"]}, {"id": 52, "type": "single", "question": "作为辛亥革命的指导思想，三民主义的局限性主要表现在：（）", "options": ["A. 没有提出反封建的土地纲领", "B. 没有反映中国人民的民主要求", "C. 没有表达资产阶级在经济上的要求", "D. 没有明确提出反对帝国主义的要求"], "answer": ["D"]}, {"id": 53, "type": "single", "question": "最能完整地体现五四运动性质的口号是： ()", "options": ["A. 废除\"二十一条\"", "B. 拒绝在和约上签字", "C. 还我青岛", "D. 外争主权，内惩国贼"], "answer": ["D"]}, {"id": 54, "type": "single", "question": "下列关于遵义会议的表述，不正确的是： ()", "options": ["A. 事实上确立了以毛泽东为核心的正确领导", "B. 彻底清算了王明\"左\"倾路线?", "C. 在危急的情况下挽救了党和红军", "D. 取消了李德的军事最高指挥权"], "answer": ["B"]}, {"id": 55, "type": "single", "question": "下列不属于毛泽东、朱德三次反\"围剿\"战略战术原则的是：（）", "options": ["A. 诱敌深入", "B. 避敌主力", "C. 打其虚弱", "D. 以堡垒对堡垒"], "answer": ["D"]}, {"id": 56, "type": "single", "question": "五四运动的中心由北京转移到上海后，运动的新特点是： ()", "options": ["A. 商人罢市", "B. 学生大规模罢课", "C. 工人阶级登上政治舞台", "D. 运动取得初步胜利"], "answer": ["C"]}, {"id": 57, "type": "single", "question": "(）年，\"神舟五号\"飞船首次实现载人航天飞行。", "options": ["A. 2000", "B. 2002", "C. 2003", "D. 2008"], "answer": ["C"]}, {"id": 58, "type": "single", "question": "之所以说\"遵义会议在事实上确立了以毛泽东为核心的党中央的正确领导\"，这主要 是指：（）", "options": ["A. 会议确认了毛泽东军事思想的正确性", "B. 毛泽东被选举为党的最高领导人", "C. 会议独立自主地运用毛泽东思想解决了党内长期存在的问题", "D. 会后由毛泽东学握了军事领导权"], "answer": ["A"]}, {"id": 59, "type": "single", "question": "在中国共产党领导下，中国人民推翻了三座大山，于1949年成立了中华人民共和 国这标志着：（）", "options": ["A. 社会主义制度的基本建立", "B. 美国遏制中国政策的失败", "C. 新民主主义革命的胜利", "D. 社会主义三大改造的开始"], "answer": ["C"]}, {"id": 60, "type": "single", "question": "抗战胜利后，美国在中国追求的短期目标，首先是：（）", "options": ["A. 推动建立一个统一的亲美政府", "B. 避免共产党完全控制中国", "C. 维持国共分治的局面", "D. 把中国变成完全的殖民地"], "answer": ["B"]}, {"id": 61, "type": "single", "question": "对第三次国内革命战争时期反蒋斗争第二条战线的准确表述是： ()", "options": ["A. 国统区的学生运动", "B. 国统区的工农运动", "C. 国统区的地下斗争", "D. 国统区的民主运动"], "answer": ["D"]}, {"id": 62, "type": "single", "question": "红军于：（）年开始长征。", "options": ["A. 1932", "B. 1933", "C. 1934", "D. 1935"], "answer": ["C"]}, {"id": 63, "type": "single", "question": "1946年6月至1947年6月，人民军队处于战略防御阶段，战争区域是： ()", "options": ["A. 解放区", "B. 华北", "C. 东北", "D. 中原"], "answer": ["A"]}, {"id": 64, "type": "single", "question": "新文化运动中所提出的民主主要是指：（)", "options": ["A. 国家主权和民主权利", "B. 人民的民主权利和自由", "C. 资本主义的政治制度", "D. 无产阶级专政下的人民民主"], "answer": ["C"]}, {"id": 65, "type": "single", "question": "国民大革命失败了，这里的\"失败\"主要是指： O", "options": ["A. 蒋介石篡夺了革命领导权", "B. 汪精卫与帝国主义相勾结", "C. 北洋军阀没有被彻底消灭", "D. 没有完成反帝反封建的任务"], "answer": ["D"]}, {"id": 66, "type": "single", "question": "1953年开始的发展国民经济的第一个五年计划规定，集中力量发展： O", "options": ["A. 农业", "B. 重工业", "C. 轻工业", "D. 第三产业"], "answer": ["B"]}, {"id": 67, "type": "single", "question": "\"芝麻赛玉米，玉米比人大\"。这句出现于20 世纪50年代的打油诗反映的是： ()", "options": ["A. 土地改革的成果", "B. 农业合作社的优越性", "C. \"一五\"计划的建设成就", "D. \"大跃进\"时的浮夸风"], "answer": ["D"]}, {"id": 68, "type": "single", "question": "1946年，政治协商会议关于国家的政治制度，确定的最高国务机关是： ()", "options": ["A. 政府委员会", "B. 人民代表大会", "C. 政协", "D. 国务院"], "answer": ["A"]}, {"id": 69, "type": "single", "question": "1946年，政协闭幕的第二天，中共中央发出党内指示，指出“从此中国即走上了和 平民主建设的新阶段\"，\"中国革命的主要斗争形式，目前已由武装斗争转变到非武装的群众 的与议会的斗争，国内问题的解决方式是：（） C", "options": ["A. 经济方式", "B. 文化方式", "C. 政治方式", "D. 斗争方式"], "answer": ["C"]}, {"id": 70, "type": "single", "question": "1936年5月，毛泽东、朱德联名发布《停战议和一致抗日通电》，公开放弃了反 蒋的口号。9月1日，中共中央发出党内指示，明确提出党的总方针是（）", "options": ["A. \"联蒋抗日\"", "B. \"去蒋抗日\"", "C. \"逼蒋抗日\"", "D. \"反蒋抗日\""], "answer": ["C"]}, {"id": 71, "type": "single", "question": "曾有报刊不切实际地宣传\"某人民公社小麦亩产10万公斤，一棵白菜250公斤\"这 种宣传应出现在：（)", "options": ["A. 土地革命时期", "B. 三大改造时期", "C. 大跃进时期", "D. 改革开放时期"], "answer": ["C"]}, {"id": 72, "type": "single", "question": "邓小平倡导解放思想，解放思想的目的和归宿是 W NOFU马院 么", "options": ["A. 实事求是", "B. 与时俱进", "C. 开拓创新", "D. 发展生产力"], "answer": ["A"]}, {"id": 73, "type": "single", "question": "1928年12月，毛泽东在（)主持制定了中国共产党历史上第一个土地法，以立 法的形式，首次肯定了广大农民以革命的手段获得土地的权利。", "options": ["A. 井冈山", "B. 兴国", "C. 闽西", "D. 宁冈"], "answer": ["A"]}, {"id": 74, "type": "single", "question": "1930年)1月，毛泽东进一步从理论上阐述农村包围城市、武装夺取政权的著作是 ()", "options": ["A. 《星星之火，可以燎原》", "B. 《中国的红色政权为什么能够存在?》", "C. 《中国革命战争的战略问题》", "D. 《井冈山的斗争》"], "answer": ["A"]}, {"id": 75, "type": "single", "question": "1919-1949年间的中国新民主主义革命，必须实现的首要任务是： 0", "options": ["A. 反对帝国主义，打破外国垄断资本的控制", "B. 反对封建主义", "C. 反对官僚资本主义", "D. 反对民族资本主义"], "answer": ["A"]}, {"id": 76, "type": "single", "question": "1926年7月，以推翻北洋军阀统治为目的的北伐战争开始，工人运动迅速高涨， 上海工人举行了（）武装起义", "options": ["A. 一次", "B. 二次", "C. 三次", "D. 四次"], "answer": ["C"]}, {"id": 77, "type": "single", "question": "1927年7月15日，（）在武汉召开\"分共\"会议，并在其辖区内对共产党员和革命 群众实行搜捕和居杀。国共合作全面破裂，大革命最络失败。", "options": ["A. 许克强", "B. 汪精卫", "C. 蒋介石", "D. 张作霖"], "answer": ["B"]}, {"id": 78, "type": "single", "question": "1935年6月中央红军抵达（）地区，同5月初离开川陕根据地实行转移到达那里 的红四方面军会师", "options": ["A. 四川懋功", "B. 甘肃会宁", "C. 陕北吴起镇", "D. 陕北瓦窑堡"], "answer": ["A"]}, {"id": 79, "type": "single", "question": "德、俄、英、法、日等国于1898年至 1899年竞相租借港湾和划分势力范围，掀 起了（）的狂潮。", "options": ["A. 侵略中国", "B. 吞并中国", "C. 消灭中国", "D. .瓜分中国"], "answer": ["D"]}, {"id": 80, "type": "single", "question": "中国近代\"睁眼看世界的第一人“是： 0 飞", "options": ["A. 林则徐", "B. 魏源", "C. 严复", "D. 李鸿章"], "answer": ["A"]}, {"id": 81, "type": "single", "question": "1945年8月14日，日本政府决定接受（），向同盟国投降。9月2日，日本政府 和大本营代表在投降书上签字。中国人民抗日战争和世界反法西斯战争胜利结束。", "options": ["A. 开罗宣言", "B. 雅尔塔协定", "C. 波茨坦公告", "D. 德黑兰宣言"], "answer": ["C"]}, {"id": 82, "type": "single", "question": "太平天国运动后期，提出《资政新篇》这一带有资本主义色彩改革方案的是： ()", "options": ["A. 洪秀全", "B. 洪仁玕", "C. 石达开", "D. 李秀成"], "answer": ["B"]}, {"id": 83, "type": "single", "question": "外国侵略者劫洗并烧毁圆明园的罪行发生在：（)", "options": ["A. 第一次鸦片战争", "B. 第二次鸦片战争", "C. 中法战争", "D. 中日甲午战争"], "answer": ["B"]}, {"id": 84, "type": "single", "question": "帝国主义列强并没有能够实现瓜分中国的图谋。其最根本的原因是： ()", "options": ["A. 帝国主义列强之间的矛盾和互相制约", "B. 清政府的奋起还击", "C. 中华民族进行的不屈不挠的反侵略斗争", "D. 帝国主义列强自动放弃"], "answer": ["C"]}, {"id": 85, "type": "single", "question": "鸦片战争使中国历史发生了（)", "options": ["A. 转折", "B. 很大转折", "C. 很大转向", "D. 重大转折"], "answer": ["D"]}, {"id": 86, "type": "single", "question": "鸦片战争以清政府的失败而告终。1842年8月29日，清政府与英国签订了中国 近代史上的第一个不平等条约是：（)", "options": ["A. 中英《南京条约》", "B. 中英《虎门条约》", "C. 中美《望夏条约》", "D. 中法《黄埔条约》"], "answer": ["A"]}, {"id": 87, "type": "single", "question": "洋务运动的目标是（)", "options": ["A. 自强求富", "B. 中体西用", "C. 挽救危亡", "D. 对外开放"], "answer": ["A"]}, {"id": 88, "type": "single", "question": "中共十九大作出中国特色社会主义进入新时代、我国社会（）发生新变化的重大 政治判断。", "options": ["A. 直接矛盾", "B. 主要矛盾", "C. 次要矛盾", "D. 重要矛盾"], "answer": ["B"]}, {"id": 89, "type": "single", "question": "中美正式建交的时间：（)", "options": ["A. 1977年", "B. 1978年", "C. 1979年", "D. 1980年"], "answer": ["C"]}, {"id": 90, "type": "single", "question": "自（）1月1日起，废止《中华人民共和国农业税条例》，在我国存在2600年 的农业税成为历史，这根本性地扭转了农民负担过重的状况，给亿万农民带来了看得见、摸 得着的实惠。", "options": ["A. 2000年", "B. 2002年", "C. 2006年", "D. 2008年"], "answer": ["C"]}, {"id": 91, "type": "single", "question": "中华人民共和国成立初期的社会性质是： (0", "options": ["A. 半殖民地半封建社会", "B. 资本主义社会", "C. 社会主义社会", "D. 新民主主义社会"], "answer": ["D"]}, {"id": 92, "type": "single", "question": "率领北平国民党军队接受和平改编的国民党将领是： ()", "options": ["A. 张治中", "B. 蔡廷锴", "C. 杜聿明", "D. 傅作义"], "answer": ["D"]}, {"id": 93, "type": "single", "question": "中国最早接受和宣传马克思主义的先进分子是：（) 信刷", "options": ["A. 陈独秀", "B. 毛泽东", "C. 李达", "D. 李大钊"], "answer": ["D"]}, {"id": 94, "type": "single", "question": "中国历史上第一部具有资产阶级共和国宪法性质的法典是0", "options": ["A. 《钦定宪法大纲》", "B. 《试训政纲领》", "C. 《中华民国临时约法》", "D. 《中华民国约法》"], "answer": ["C"]}, {"id": 95, "type": "single", "question": "标志我国两千多年的封建剥削土地制度被彻底废除的是：（）", "options": ["A. 西藏的和平解放", "B. 对农业社会主义改造的完成", "C. 抗美援朝的胜利", "D. 土地改革的完成"], "answer": ["D"]}, {"id": 96, "type": "single", "question": "1946年5月4日，中共中央发出《五四指示》，所决定的土地政策是： ()", "options": ["A. 减租", "B. 耕者有其田", "C. 天下田天下人耕", "D. 减息"], "answer": ["B"]}, {"id": 97, "type": "single", "question": "袁世凯窃取辛亥革命胜利成果后，中国民族资产阶级的最大愿望是： ()", "options": ["A. 恢复孙中山总统职位", "B. 实行议会政治", "C. 使国民党成为国会第一大党", "D. 进行二次革命"], "answer": ["B"]}, {"id": 98, "type": "single", "question": "袁世凯派人刺杀宋教仁的目的在于： O 程序", "options": ["A. 寻找借口镇压南方各省革命派", "B. 为了阻止国民党组织责任内阁", "C. 为了阻止宋教仁北上参加竞选", "D. 为了迫使内阁总理唐绍仪辞职"], "answer": ["B"]}, {"id": 99, "type": "single", "question": "与中共一大相比较，中共二大最重要的贡献是确立了： ()", "options": ["A. 以工人运动为中心的任务", "B. 在民主革命阶段的纲领", "C. 民主集中制的原则", "D. 为共产主义奋斗的目标"], "answer": ["B"]}, {"id": 100, "type": "single", "question": "国共两党第一次合作的政治基础是： ()", "options": ["A. 联俄联共扶助农工三大政策", "B. 三民主义", "C. 新三民主义", "D. 中共三大决议"], "answer": ["C"]}, {"id": 101, "type": "single", "question": "“三步走\"战略，目前为止我们已经实现了：（）", "options": ["A. 第一步", "B. 前两步", "C. 全都实现了", "D. 都没有实现"], "answer": ["B"]}, {"id": 102, "type": "single", "question": "1945年，中共召开“七大\"时，毛泽东提出，对蒋介石要采取的政策是： 0", "options": ["A. 洗脸政策", "B. 杀头政策", "C. 同盟政策", "D. 三光政策"], "answer": ["A"]}, {"id": 103, "type": "single", "question": "1965年11月10日，0)的文章《评新编历史剧《海瑞罢官〉》在上海《文汇报》 发表，成为毛泽东发动\"文化大革命\"的导火线。", "options": ["A. 姚文元", "B. 康生", "C. 张春桥", "D. 江青"], "answer": ["A"]}, {"id": 104, "type": "single", "question": "彰显了新中国大国地位，让世界对中国刮目相看的是0", "options": ["A. 抗美援朝运动", "B. 土地改革运动", "C. 镇压反革命运动", "D. 没收四大家族和国民政府财产"], "answer": ["A"]}, {"id": 105, "type": "single", "question": "党的（），首次提出\"加强党的执政能力建设\"的科学命题。", "options": ["A. 十五大", "B. 十六大", "C. 十七大", "D. 十八大"], "answer": ["B"]}, {"id": 106, "type": "single", "question": "建国以后人民政府没收国民政府财产和官僚资本，这一措施：（）", "options": ["A. 属于新民主主义革命性质", "B. 属于社会主义革命性质", "C. 兼有旧民主主义革命和新民主主义革命的性质", "D. 兼有新民主主义革命和社会主义革命的性质"], "answer": ["D"]}, {"id": 107, "type": "single", "question": "毛泽东开创了农村包围城市的革命道路，邓小平开创了建设中国特色的社会主义 道路，两者最重要的共同点在于：（）", "options": ["A. 实事求是，从中国国情出发", "B. 坚持走群众路线", "C. 坚定不移地走社会主义道路", "D. 借鉴苏联的经验"], "answer": ["A"]}, {"id": 108, "type": "single", "question": "如果把过渡时期的总路线比作一只鸟，它的一双翅膀是：（）", "options": ["A. 发展社会主义工业", "B. 发展社会主义农业", "C. 对农业、手工业和私营工商业的社会主义改造", "D. 对工业实行社会主义改造"], "answer": ["C"]}, {"id": 109, "type": "single", "question": "社会主义初级阶段的主要矛盾决定了我们的中心任务是0 U马院", "options": ["A. 建立社会主义市场经济", "B. 以经济建设为中心，发展社会生产力", "C. 实现经济增长方式和经济体制的根本转变", "D. 保持社会稳定"], "answer": ["B"]}, {"id": 110, "type": "single", "question": "1929年12月，创造性地解决了在农村环境中、在党组织和军队以农民为主要成 分的环境下，如何从加强思想建设入手，保持党的无产阶级先锋队性质和建设党领导的新型 人民军队的会议是（)", "options": ["A. 八七会议", "B. 洛川会议", "C. 古田会议", "D. 瓦密堡会议"], "answer": ["C"]}, {"id": 111, "type": "single", "question": "1917年悍然拥立废帝溥仪，复辟清朝的封建军阀是： ()", "options": ["A. 袁世凯", "B. 张勋", "C. 段祺瑞", "D. 张作霖"], "answer": ["B"]}, {"id": 112, "type": "single", "question": "1934年 10月，中央红军连同后方机关共（）多人，从福建长汀、宁化和江西瑞 金等地出发，开始长征", "options": ["A. 10.6万", "B. 9.6万", "C. 8.6万", "D. 7.6万"], "answer": ["C"]}, {"id": 113, "type": "single", "question": "1925年，国共两党掀起了全国范围的大革命高潮的起点是： ()", "options": ["A. 国民党一大", "B. 成立黄埔军校", "C. 五州运动", "D. 广州国民政府成立"], "answer": ["C"]}, {"id": 114, "type": "single", "question": "1927 年9月9日，毛泽东领导的湘赣边界秋收起义爆发，10月7日抵达江西省 宁冈县（），开始了创建井网山农村革命根据地的斗争。", "options": ["A. 茅坪", "B. 茨坪", "C. 砻市", "D. 大井"], "answer": ["A"]}, {"id": 115, "type": "single", "question": "20世纪30年代，中国共产党内最早提出反对教条主义的任务的领导人是： )", "options": ["A. 毛泽东", "B. 刘少奇", "C. 周恩来", "D. 张闻天"], "answer": ["A"]}, {"id": 116, "type": "single", "question": "按照中国近代思想的演变过程，排列以下思想主张的顺序：（）（1）公理未明， 即以革命明之：旧俗俱在即以革命去之；（2)师夷长技以制夷；（3)穷则变，变则通，通则 久;(4)中学为体，西学为用。 （1) (1)${3}(2) B: (4) C: 京国 (4) (1) D: (1) (4} (3}", "options": ["A. (2) (4}/(3}"], "answer": ["A"]}, {"id": 117, "type": "single", "question": "1911年至 1925年间建立的下列政权中，不具有革命性质的是： 0", "options": ["A. 南京临时政府", "B. 北京政府", "C. 湖北军政府", "D. 广州国民政府"], "answer": ["B"]}, {"id": 118, "type": "single", "question": "规定在中国通商口岸可以投资设厂的条约是： ()", "options": ["A. 《南京条约》", "B. 《天津条约》", "C. 《马关条约》", "D. 《北京条约》"], "answer": ["C"]}, {"id": 119, "type": "single", "question": "近代中国半殖民地半封建社会的矛盾，呈现出错综复杂的状况。在这些社会矛盾 中，占支配地位的主要矛盾，是（），(）的矛盾，这两对主要矛盾及其斗争贯穿整个中国 半殖民地半封建社会的始终，并对中国近代社会的发展变化起着决定性的作用。", "options": ["A. 帝国主义和中华民族的矛盾，封建主义和人民大众", "B. .资产阶级与地主阶级之间的矛盾，地主阶级与农民阶级之间的矛盾", "C. 封建主义与资本主义之间的矛盾，封建主义与帝国主义之间的矛盾", "D. 封建统治阶级内部各集团派系之间的矛盾与各帝国主义国家之间的矛盾"], "answer": ["A"]}, {"id": 120, "type": "single", "question": "《字丑条约》的签订标志着：（)", "options": ["A. 中国社会半殖民地半封建化进一步加深", "B. 中国完全沦为半殖民地半封建社会", "C. 中国开始沦为半殖民地半封建社会", "D. 中国半殖民地半封建社会基本形成"], "answer": ["B"]}, {"id": 121, "type": "single", "question": "1840年英国蓄谋发动的鸦片战争，使中国社会发生了巨变，成为中国近代史的 开端。英国发动鸦片战争的主要目的是： O", "options": ["A. 扭转对华贸易逆差", "B. 用武力保护鸦片走私", "C. 迫使清政府放弃\"闭关\"政策", "D. 打开中国商品市场"], "answer": ["D"]}, {"id": 122, "type": "single", "question": "19 世纪末，梁启超撰写的宣传变法维新主张的著作是： ()", "options": ["A. 《新学伪经考》", "B. 《人美公理》", "C. 《仁学》", "D. 《变法通议》"], "answer": ["D"]}, {"id": 123, "type": "single", "question": "到（）的订立为止，庞杂的不平等条约体系已宣告中国半殖民地社会的完全形成", "options": ["A. 《天津条约》", "B. 《北京条约》", "C. 《马关条约》", "D. 《辛丑条约》"], "answer": ["D"]}, {"id": 124, "type": "single", "question": "学习本课程要深刻领会中国共产党为什么()、马克思主义为什么)、中国特色社会 主义为什么)，更加坚定地在中国共产党坚强领导下为实现中华民族伟大复兴而不懈奋斗。 () C能，行，好", "options": ["A. 能，好，行", "B. 行，好，能", "D. 好，行，能"], "answer": ["C"]}, {"id": 125, "type": "single", "question": "鸦片战争后，首先被外国侵略者直接控制的是：（)", "options": ["A. 中国外交", "B. 中国内政", "C. 中国海关", "D. 中国军事"], "answer": ["C"]}, {"id": 126, "type": "single", "question": "洋务运动的本质是（)", "options": ["A. 挽救清政府的统治危机", "B. 购买和制造洋枪、洋炮镇压农民起义", "C. 增强本国的实力", "D. 发展资本主义"], "answer": ["A"]}, {"id": 127, "type": "single", "question": "中共十一届三中全会作出了把工作重点转移到（）上来的决策。", "options": ["A. 阶级斗争", "B. 政治建设", "C. 文化革命", "D. 社会主义现代化建设和改革开放"], "answer": ["D"]}, {"id": 128, "type": "single", "question": "中共八大在经济建设上，坚持（）中稳步前进的方针", "options": ["A. 综合平衡", "B. 保守", "C. 冒进", "D. 多快好省"], "answer": ["A"]}, {"id": 129, "type": "single", "question": "中共八大上，做政治报告的是： ()", "options": ["A. 毛泽东", "B. 刘少奇", "C. 周恩来", "D. 邓小平"], "answer": ["B"]}, {"id": 130, "type": "single", "question": "五四运动前夕，中国产业工人已经达到（）余万人", "options": ["A. 50", "B. 100", "C. 200", "D. 300"], "answer": ["C"]}, {"id": 131, "type": "single", "question": "(）中美两国正式建立外交关系", "options": ["A. 1977年", "B. 1978年", "C. 1979年", "D. 1980 年"], "answer": ["C"]}, {"id": 132, "type": "single", "question": "(）全会决定恢复邓小平在1976 年被撤销的一切职务", "options": ["A. 十届一中", "B. 十届二中", "C. 十届三中", "D. 十届四中"], "answer": ["C"]}, {"id": 133, "type": "single", "question": "(）标志着对外开放进入一个新阶段。", "options": ["A. 加入世贸组织", "B. 实行改革开放", "C. 香港回归", "D. \"九五\"计划的完成"], "answer": ["A"]}, {"id": 134, "type": "single", "question": "南京大屠杀，是指第二次世界大战期间，侵华日军于1937年（）月（）日攻陷 南京之后，在南京城区及郊区对手无寸铁的中国平民和战俘进行的长达6个星期的大规模居 杀、抢掠、强奸等战争罪行。据中国学者考证，在南京大屠杀中死伤的中国民众高达30万 以上，是日本侵略者在中国犯下的很严重的罪行之一，而日本右翼则极力缩小当年侵华日军 的罪行、更有部分人置历史事实于不顾，试图抹杀事实。", "options": ["A. 7.7", "B. 9, 18", "C. 8,13", "D. 12, 13"], "answer": ["D"]}, {"id": 135, "type": "single", "question": "中国最早的资产阶级革命团体是：（)", "options": ["A. 强学会", "B. 兴中会", "C. 华兴会", "D. 同盟会"], "answer": ["B"]}, {"id": 136, "type": "single", "question": "三民主义的核心·是：（)", "options": ["A. 民族主义", "B. 民权主义", "C. 民生主义", "D. 创立民国"], "answer": ["B"]}, {"id": 137, "type": "single", "question": "热情讴歌革命的文章《革命军》的作者是：（)", "options": ["A. 章炳麟", "B. 邹容", "C. 陈天华", "D. 孙中山"], "answer": ["B"]}, {"id": 138, "type": "single", "question": "1958年，人民公社的基本特点被概括为： 0", "options": ["A. 小社并大社", "B. 政社合", "C. 政教合一", "D. 一大二公"], "answer": ["D"]}, {"id": 139, "type": "single", "question": "抗战胜利后，美国在中国追求的长期的基本目标是： ()", "options": ["A. 推动建立一个统一的亲美政府", "B. 把中国变成完全的殖民地", "C. 维持中国的分裂现状", "D. 维持中国半殖民地半封建社会的现状"], "answer": ["A"]}, {"id": 140, "type": "single", "question": "揭开人民解放军全国性战略进攻序幕的是：（）", "options": ["A. 孟良崮战役开始", "B. 刘邓大军挺进大别山", "C. 三大战役开始", "D. 渡江战役开始"], "answer": ["B"]}, {"id": 141, "type": "single", "question": "标志着第三条道路破产的事件是：（)", "options": ["A. 1946年6月蒋介石发动全面内战", "B. 1946年11月蒋介石下令召开伪国民大会", "C. 1947 年3月蒋介石下令进攻延安", "D. 1947年-10月蒋介石下令解散中国民主同盟"], "answer": ["D"]}, {"id": 142, "type": "single", "question": "1949年4月23日，人民解放军占领南京，延续了（）年之久的国民党反动统治 覆灭了。", "options": ["A. 22年", "B. 23年", "C. 24年", "D. 25年"], "answer": ["A"]}, {"id": 143, "type": "single", "question": "在 1931年毛泽东制定的土地革命路线中，对富农的政策是：（）", "options": ["A. 消灭富农", "B. 联合富农", "C. 限制富农", "D. 保护富农"], "answer": ["C"]}, {"id": 144, "type": "single", "question": "新文化运动兴起的直接原因是： ()", "options": ["A. 列强支持袁世凯复辟帝制", "B. 中国资本主义有了进一步的发展", "C. 袁世凯掀起尊孔复古逆流", "D. 西方启蒙思想进一步介绍到中国"], "answer": ["C"]}, {"id": 145, "type": "single", "question": "新文化运动兴起的标志是： (0 小程序", "options": ["A. 陈独秀创办《新青年》", "B. 民主和科学口号的提出", "C. 胡适发表《文学改良白议》", "D. 李大钊发表《庶民的胜利》"], "answer": ["A"]}, {"id": 146, "type": "single", "question": "二次革命失败的最重要原因是", "options": ["A. 国民党力量涣散", "B. 袁世凯得到帝国主义的支持", "C. 袁世凯军队强大", "D. 革命党人军队不足"], "answer": ["A"]}, {"id": 147, "type": "single", "question": "标志着资产阶级革命派初步形成的事件是：（）", "options": ["A. 兴中会成立", "B. 1895年广州起义", "C. 三民主义的提出", "D. 华兴会的成立"], "answer": ["A"]}, {"id": 148, "type": "single", "question": "1945年8月25日，中共中央提出\"和平、民主、团结\"三大口号的文件是： )", "options": ["A. 《抗日战争胜利后的时局和我们的方针》", "B. 《对目前时局的宣言》", "C. 《中共中央关于同国民党进行和平谈判的通知》", "D. 《政府与中共代表会谈纪要》"], "answer": ["B"]}, {"id": 149, "type": "single", "question": "被称为开创我国社会主义建设事业发展新时期的宣言书，并为十一届三中全会召 开作了思想准备的重要文献是：（）", "options": ["A. 《解放思想，实事求是，团结一致向前看》", "B. 《在全国科学大会开幕式上的讲话》", "C. 《中国共产党第十二次代表大会开幕词》", "D. 《南方谈话》"], "answer": ["A"]}, {"id": 150, "type": "single", "question": "邓小平曾指出，决定中国命运的一招是（)", "options": ["A. 惩治腐败B、C、D、", "B. 实现四个现代化", "C. 发展生产力", "D. 改革开放"], "answer": ["D"]}, {"id": 151, "type": "single", "question": "邓小平提出的\"三个有利于\"标准具有内在联系性，其中最基本的是（）", "options": ["A. 生产力标准", "B. 人民生活水平标准", "C. 综合国力标准", "D. 社会文化标准"], "answer": ["B"]}, {"id": 152, "type": "single", "question": "第一个五年计划是在（）时期完成的", "options": ["A. 大跃进时期", "B. 文革时期", "C. 全面进行社会主义建设时期", "D. 社会主义改造时期"], "answer": ["D"]}, {"id": 153, "type": "single", "question": "对资本主义工商企业进行社会主义改造，对民族资产阶级实行的政策是： ()", "options": ["A. 抢夺", "B. 赎买", "C. 供销", "D. 发展"], "answer": ["B"]}, {"id": 154, "type": "single", "question": "新中国成立之初，即开始进行有计划的社会主义建设，这个国民经济的第一个五 年计划起始时间为：（）", "options": ["A. 1949-1954", "B. 1950-1955", "C. 1953-1957", "D. 1951-1956"], "answer": ["C"]}, {"id": 155, "type": "single", "question": "农民走向社会主义的几种过渡性经济组织形式中，具有社会主义萌芽性质的是： (O", "options": ["A. 国营经济", "B. 公有经济", "C. 小农经济", "D. 互助组"], "answer": ["D"]}, {"id": 156, "type": "single", "question": "农业互助合作的发展，所要坚持的原则是自愿和（）", "options": ["A. 分散", "B. 互利", "C. 合作", "D. 发展"], "answer": ["B"]}, {"id": 157, "type": "single", "question": "洋务运动未能使中国走上富强的根本原因是： () 的", "options": ["A. 没有触动封建生产关系", "B. 单纯学习西方科技以求自强", "C. 没有采用资本主义生产管理制度", "D. 西方列强极力阻碍破坏"], "answer": ["A"]}, {"id": 158, "type": "single", "question": "1900年9月7日， （）在逃亡途中发出下令镇压义和团运动的上渝。 台", "options": ["A. 光绪帝", "B. 道光帝", "C. 慈禧太后", "D. 咸丰帝"], "answer": ["C"]}, {"id": 159, "type": "single", "question": "中国近代第一个系统介绍西学的启蒙思想家、翻译家是：（）", "options": ["A. 康有为", "B. 梁启超", "C. 严复", "D. 谭嗣同"], "answer": ["C"]}, {"id": 160, "type": "single", "question": "1853年冬，太平天国颁布的一个分配制度为核心的社会改革纲领是： ()", "options": ["A. 中国土地法大纲", "B. 兴国土地法", "C. 天朝田亩制度", "D. 资政新篇"], "answer": ["C"]}, {"id": 161, "type": "single", "question": "戊戌变法开始的标志是（）", "options": ["A. 强学会的成立", "B. 光绪帝颁布“明定国是\"谕旨", "C. \"公车上书”", "D. 创办《时务报》"], "answer": ["B"]}, {"id": 162, "type": "single", "question": "下列关于太平天国运动的说法，错误的是 O D·:太平天国领导内讧严重削弱了自己的力量", "options": ["A. 太平天国运动受到了西方宗教思想的很大影响", "B. 太平天国运动给满清王朝的统治以沉重的打击", "C. 西方列强从未插手太平天国运动"], "answer": ["C"]}, {"id": 163, "type": "single", "question": "下列太平天国的诸活动中，能与当时世界历史潮流同步的是： () 程序", "options": ["A. 颁布《天朝田亩制度》", "B. 洪仁玕的《资政新篇》", "C. 严惩外国侵略者", "D. 反对腐朽没落的封建统治"], "answer": ["B"]}, {"id": 164, "type": "single", "question": "帝国主义列强对中国进行文化渗透的目的是： ()", "options": ["A. 传播西方文化和科学", "B. 进行传教活动", "C. 宣扬殖民主义奴化思想，麻醉中国人民的精神，摧毁中国人民的民族自尊心和自信心。", "D. 干涉中国内政"], "answer": ["C"]}, {"id": 165, "type": "single", "question": "洋务运动对中国社会近代化进程的主要影响是：（）", "options": ["A. 开始了中国早期工业化的进程", "B. 初次实现了\"师夷长技\"的思想", "C. 建立了中国近代第一支海军", "D. 促成了清朝统治集团内部的分化"], "answer": ["A"]}, {"id": 166, "type": "single", "question": "作为衡量合作社是否办好的标准是： ()", "options": ["A. 国营经济的发展", "B. 公有经济的发展", "C. 是否发展", "D. 是否增产"], "answer": ["D"]}, {"id": 167, "type": "single", "question": "辛亥革命爆发后英美列强积极扶植袁世凯的主要原因是： O", "options": ["A. 清政府已经无可救药", "B. 袁世凯较清政府更加忠实于帝国主义", "C. 革命党人损害了列强的在华利益", "D. 认为袁世凯有能力维持中国\"国内秩序”"], "answer": ["D"]}, {"id": 168, "type": "single", "question": "武昌起义的导火线是0", "options": ["A. 黄花岗起义", "B. 萍浏醴起义", "C. 保路运动", "D. 广州起义"], "answer": ["C"]}, {"id": 169, "type": "single", "question": "五四运动前夕，中国工人阶级队伍发展到：（）", "options": ["A. 60 多万人", "B. 150多万人", "C. 200多万人", "D. 400多万人"], "answer": ["C"]}, {"id": 170, "type": "single", "question": "为了让对方支持他复辟，袁世凯与哪个国家签定严重丧权辱国的\"二十一条\"：（）", "options": ["A. 英国", "B. 法国", "C. 美国", "D. 日本"], "answer": ["D"]}, {"id": 171, "type": "single", "question": "人民解放战争走向胜利的历史转折点是： 0", "options": ["A. 粉碎重点进攻", "B. 战略反攻", "C. 三大战役", "D. 渡江作战"], "answer": ["B"]}, {"id": 172, "type": "single", "question": "长征时中国工农红军进行的战略转移，其中\"转移\"指的是（）", "options": ["A. 党的工作重心的转移", "B. 中国的革命性质发生变化", "C. 革命中心地区发生了转移", "D. 中国革命的任务发生了变化"], "answer": ["C"]}, {"id": 173, "type": "single", "question": "早期马克思主义在中国广泛传播的主要阵地有：（）", "options": ["A. 《向导》", "B. 《新青年》", "C. 《湘江评论》", "D. 《星期评论》"], "answer": ["B"]}, {"id": 174, "type": "single", "question": "1958年，中共八大二次会议通过的社会主义建设总路线、是（）、力争上游、 多快好省地建设社会主义", "options": ["A. 鼓足干劲", "B. 加班加点", "C. 努力奋斗", "D. 实事求是"], "answer": ["A"]}, {"id": 175, "type": "single", "question": "国民党在全国范围内建立自己统治的标志是（）", "options": ["A. 宁汉合流", "B. 中山舰事件", "C. 皇姑屯事件", "D. 东北易帜"], "answer": ["D"]}, {"id": 176, "type": "single", "question": "1946年,6月底，全面内战是以国民党进攻（）解放区为起点的。", "options": ["A. 中原", "B. 华北", "C. 东北", "D. 西北"], "answer": ["A"]}, {"id": 177, "type": "single", "question": "辛亥革命是一场资产阶级革命，但没有得到资本主义各国的支持,主要原因是：（）", "options": ["A. 外国人不了解孙中山及其革命的性质。民主解决。", "B. 资本主义各国不赞成武装起义的斗争方式", "C. 西方各国不愿中国走上独立富强的道路", "D. 列强已经选中了袁世凯为其代理人"], "answer": ["C"]}, {"id": 178, "type": "single", "question": "第一个中国共产党早期组织建立于：（）", "options": ["A. 上海", "B. 北京", "C. 武汉", "D. 长沙"], "answer": ["A"]}, {"id": 179, "type": "single", "question": "第一次国共合作的政治基础是： ()", "options": ["A. 三民主义", "B. 反帝反封建", "C. 联俄、联共，扶助农工的三大政策", "D. 新三民主义"], "answer": ["D"]}, {"id": 180, "type": "single", "question": "1935年8月1日，中国共产党发表了： ()", "options": ["A. 《中国共产党中央委员会为目前时局告同志书》", "B. 《为日本帝国主义强暴占领东三省事件宣言》", "C. 《为抗日救国告全体同胞书》", "D. 《抗日反蒋宣言》"], "answer": ["C"]}, {"id": 181, "type": "single", "question": "1958年的总路线，在宣传中和实际工作中片面突出了（）字", "options": ["A. 多", "B. 快", "C. 好", "D. 省"], "answer": ["B"]}, {"id": 182, "type": "single", "question": "文化大革命的发动者和领导者是：（） W口", "options": ["A. 邓小平", "B. 周恩来", "C. 毛泽东", "D. 华国锋"], "answer": ["C"]}, {"id": 183, "type": "single", "question": "实现了建国以来党的历史上具有深远意义的伟大转折的会议是：（)", "options": ["A. 中共“八大”", "B. 中共十一届三中全会", "C. 中共\"十二大”", "D. 中共\"十三大”"], "answer": ["B"]}, {"id": 184, "type": "single", "question": "下列新中国几个历史时期排序正确的是： 0 化大革命\"时期 设社会主义时期 改革开放新时期 ·:基本完成社会主义改造、排徊中前进时期、全面建设社会主义时期、“文化大革命\"时期、 改革开放新时期", "options": ["A. 全面建设社会主义时期、改革开放新时期、基本完成社会主义改造、徘徊中前进时期、\"文", "B. 改革开放新时期、基本完成社会主义改造、徘徊中前进时期、“文化大革命\"时期、全面建", "C. 基本完成社会主义改造、全面建设社会主义时期、\"文化大革命\"时期、徘徊中前进时期、"], "answer": ["C"]}, {"id": 185, "type": "single", "question": "邓小平发表南方谈话是在： (0", "options": ["A. 1990年", "B. 1991年", "C. 1992年", "D. 1993年"], "answer": ["C"]}, {"id": 186, "type": "single", "question": "对民族资产阶级，在团结他们的同时，逐步改造他们的方法是： ()", "options": ["A. 和平", "B. 暴力", "C. 消灭", "D. 同情"], "answer": ["A"]}, {"id": 187, "type": "single", "question": "1930年5月，毛泽东提出\"没有调查，就没有发言权\"的观点，该观点出自（）", "options": ["A. 《中国革命战争的战略问题》", "B. 《反对本本主义》", "C. 《井冈山的斗争》", "D. 《星星之火，可以燎原》"], "answer": ["B"]}, {"id": 188, "type": "single", "question": "1915年，（）在云南率先举起反袁护国的旗帜，发动护国战争。 A蔡锷", "options": ["B. 孙中山", "C. 段祺瑞", "D. 黄兴"], "answer": ["A"]}, {"id": 189, "type": "single", "question": "1919年6月5日起，（）六七万工人为声援学生自动举行罢工。工人罢工推动 了商人罢市、学生罢课", "options": ["A. 北京", "B. 上海", "C. 南京", "D. 天津"], "answer": ["B"]}, {"id": 190, "type": "single", "question": "1931年11月，中华苏维埃第一次全国工农兵代表大会在江西省瑞金县叶坪村举 行并成立了中华苏维埃共和国临时中央政府，（）当选为主席。", "options": ["A. 王明", "B. 张国焘", "C. 毛泽东", "D. 张闻天"], "answer": ["C"]}, {"id": 191, "type": "single", "question": "1927年（），蒋介石在上海发动反共政变，以“清党\"为名，在东南各省大规模捕 杀共产党员和革命群众。", "options": ["A. 4月11日", "B. 4月12日", "C. 4月13日", "D. 4月14日"], "answer": ["B"]}, {"id": 192, "type": "single", "question": "近代中国人数最多的被剥削阶级是 ()", "options": ["A. 农民阶级", "B. 工人阶级", "C. 小资产阶级", "D. 无产阶级"], "answer": ["A"]}, {"id": 193, "type": "single", "question": "基督教在中国设立的最大的出版机构是广学会。广学会发行的刊物（），在介绍 西方史地、政治、文化的同时，也宣扬殖民主义奴化思想。 刷匙", "options": ["A. 《万国公报》", "B. 《民报》", "C. 《字林西报》", "D. 《新民丛报》"], "answer": ["A"]}, {"id": 194, "type": "single", "question": "1640年的（）资产阶级革命标志着世界历史开始进入资本主义时代。至18世纪， (）N(）等先后通过资产阶级革命，建立了资产阶级政权，为资木主义的发展提供了政治 上的前提和保证。", "options": ["A. 美国，法国，英国", "B. 英国，法国，美国", "C. 英国，美国，法国", "D. 法国，日本，德国"], "answer": ["C"]}, {"id": 195, "type": "single", "question": "17 世纪下半叶至18 世纪，清代的康熙、雍正、乾隆年间，是中国封建社会后期 的鼎盛时期，但同时也开始走向了封建社会的末世。到了鸦片战争前夜的（）、（）年间， 清王朝衰相尽显，潜伏着许多危机。", "options": ["A. 同治、光绪", "B. 嘉庆、道光", "C. 顺治、道光", "D. 道光、嘉庆"], "answer": ["B"]}, {"id": 196, "type": "single", "question": "天京变乱说明的最基本道理是： ()", "options": ["A. 农民阶级的领袖缺芝革命的进取心", "B. 农民政权内部的斗争不可避免", "C. 农民阶级绝对不是一个先进的阶级", "D. 小农经济的分散性决定了农民阶级不能形成坚强的领导核心"], "answer": ["D"]}, {"id": 197, "type": "single", "question": "戊成变法运动的突出历史功绩在于：（）", "options": ["A. 挽救民族危亡", "B. 推行了资本主义的政治改革", "C. 促进思想启蒙", "D. 极大发展资本主义经济"], "answer": ["C"]}, {"id": 198, "type": "single", "question": "鸦片战争时期新思潮萌发，其核心是， () 程", "options": ["A. 向西方学习，寻求强国御侮之道", "B. 学习西方技术，发展资本主义", "C. 抛弃\"天朝上国\"梦幻，放眼看世界", "D. 效法西方，实行君主立宪政治"], "answer": ["A"]}, {"id": 199, "type": "single", "question": "中共十七大召开的时间是： () 信刷", "options": ["A. 2006", "B. 2007", "C. 2008", "D. 2009"], "answer": ["B"]}, {"id": 200, "type": "single", "question": "在公私合营过程中，每年发给资本家5%的股息，这就叫做： (", "options": ["A. 股金红利", "B. 定股定息", "C. 代销", "D. 代购代销"], "answer": ["B"]}, {"id": 201, "type": "single", "question": "下列武昌起义成功的原因中，最主要的是：（）", "options": ["A. 清朝湖北当局无力抵抗", "B. 革命党人筹划周密完善", "C. 起义新军的革命主动精神", "D. 立宪派改变策略乘机符合"], "answer": ["C"]}, {"id": 202, "type": "single", "question": "五四运动的直接导火线是： (0", "options": ["A. \"二十一条\"的签订", "B. 巴黎和会的召开", "C. 巴黎和会上中国外交的失败", "D. 北洋政府的镇压"], "answer": ["C"]}, {"id": 203, "type": "single", "question": "抗战胜利后，中国人民的根本利益之所在是： )", "options": ["A. 维护国民党的统治地位", "B. 与国民党进行内战", "C. 维持国家现状", "D. 实现和亚、民主"], "answer": ["D"]}, {"id": 204, "type": "single", "question": "同盟会的机关刊物是： 0", "options": ["A. 《新民丛报》", "B. 《苏报》", "C. 《民报》", "D. 《国民报》"], "answer": ["C"]}, {"id": 205, "type": "single", "question": "提出“驱除鞑房，恢复中华，建立民国，平均地权\"的政治纲领的是： ()", "options": ["A. 兴中会", "B. 华兴会", "C. 光复会", "D. 同盟会"], "answer": ["D"]}, {"id": 206, "type": "single", "question": "1956年，毛泽东在中共中央政治局扩大会议后，提出学术问题上要： ()", "options": ["A. 百花齐放", "B. 百家争鸣", "C. 兼容并蓄", "D. 海纳百川"], "answer": ["B"]}, {"id": 207, "type": "single", "question": "抗日战争胜利后，某些民主党派的领导人曾经鼓收\"中间路线\"，他们所主张的的 道路实质上是： ()", "options": ["A. 新民主主义", "B. I日民主主义", "C. 帝国主义", "D. 半殖民地半封建"], "answer": ["B"]}, {"id": 208, "type": "single", "question": "解放战争时期，国民党统治区人民民主运动高涨的根本原因是： ()", "options": ["A. 中国共产党组织了反蒋统治的第二条战线", "B. 上海学生举行了声势浩大的“三反\"斗争", "C. 国民党蒋介石集团的经济崩溃和政治危机", "D. 民主党派的联合斗争和人民起义遍及各地"], "answer": ["C"]}, {"id": 209, "type": "single", "question": "成了新文化运动的主要阵地的是：（）", "options": ["A. 北京大学", "B. 清华大学", "C. 南京大学", "D. 复旦大学"], "answer": ["A"]}, {"id": 210, "type": "single", "question": "1951年底到1952年，党和政府开展了： ()", "options": ["A. “三反\"、“五反\"运动", "B. 镇压反革命", "C. 土地改革", "D. 抗美援朝"], "answer": ["A"]}, {"id": 211, "type": "single", "question": "手工业合作化基本完成的时间是：（）", "options": ["A. 1955年底", "B. 1956年底", "C. 1957年底", "D. 1958年底"], "answer": ["B"]}, {"id": 212, "type": "single", "question": "首次以\"台湾回到祖国怀抱，实行统一大业\"来代替\"解放台湾\"提法的是（)", "options": ["A. 《告台湾同胞书》", "B. 《中国大陆和台湾和平统一的设想》", "C. 汪辜会谈纪要", "D. 十一届三中全会公报"], "answer": ["D"]}, {"id": 213, "type": "single", "question": "新中国成立初期，中国共产党和中国政府对台湾问题的方针是（）", "options": ["A. 积极备战,解放台湾B、", "B. 暂时不动，待机收回", "C. 国共谈判，和平统", "D. 创造条件，和平统"], "answer": ["A"]}, {"id": 214, "type": "single", "question": "党的过渡时期总路线最显著的特点是： ()", "options": ["A. 社会主义工业化和社会主义改造同时并举", "B. \"一化三改\"、\"一体两翼\"的辩证统-", "C. 以实现社会主义工业化为最主要目标", "D. 符合当时的基本国情，反映了新民主主义向社会主义转变的历史必然性"], "answer": ["A"]}, {"id": 215, "type": "single", "question": "邓小平指出，改革开放每前进一步，都要（）", "options": ["A. 先分清姓\"社\"姓资\"问题", "B. 解放思想，实事求是", "C. 先分清姓\"公\"姓私\"问题", "D. 先看是否符合社会主义原则"], "answer": ["B"]}, {"id": 216, "type": "single", "question": "经过长期努力，中国特色社会主义进入了（),这是我国发展新的历史方位。中华 民族日益走近世界舞台中央，迎来了实现伟大复兴的光明前景，比历史上任何时期都更接近 伟大复兴的光明前景。", "options": ["A. 新时期", "B. 新时代", "C. 新阶段", "D. 新高潮"], "answer": ["B"]}, {"id": 217, "type": "single", "question": "科学发展观的核心是： ()", "options": ["A. 以人为本", "B. 全面、协调、可持续", "C. 统筹兼顾", "D. 发展"], "answer": ["A"]}, {"id": 218, "type": "single", "question": "(）翻译了《天演论》一书：（）", "options": ["A. 林则徐", "B. 魏源", "C. 郑观应", "D. 严复"], "answer": ["D"]}, {"id": 219, "type": "single", "question": "康有为向光绪帝呈递的《应诏统筹全局折》实际上是维新派的施政纲领，因为它： ()", "options": ["A. 提出了各方面具体的变法建议", "B. 主张实行君主立宪的政治体制", "C. 系统论证了维新变法的理论", "D. 明确指出了变法是救亡图存的唯一出路"], "answer": ["A"]}, {"id": 220, "type": "single", "question": "指挥清军在中越边境前线大败法军，取得镇南关大捷的是： ()", "options": ["A. 冯子材", "B. 邓延桢", "C. 林则徐", "D. 李鸿章"], "answer": ["A"]}, {"id": 221, "type": "single", "question": "租界里的一切都由外国殖民者管理，中国的法律在这里不发生效力，俨然是\"国 中之国\"。1845年，英国租得上海外滩附近837亩土地，设立上海英租界。以后直至1911 年，列强先后在上海、天津、汉口、广州、福州、重庆等16 个城市，设立了（小多个租界。", "options": ["A. 80", "B. 30", "C. 40", "D. 16"], "answer": ["B"]}, {"id": 222, "type": "single", "question": "1895年，日本强迫清政府签订《马关条约》，割去中国（）全岛及所有附属岛 屿和澎湖列岛。", "options": ["A. 香港", "B. 台湾", "C. 澳门", "D. 崇明"], "answer": ["B"]}, {"id": 223, "type": "single", "question": "太平天国运动具有民主革命的性质主要体现在：（）", "options": ["A. 领导阶级", "B. 指导思想", "C. 斗争形式", "D. 革命任务"], "answer": ["D"]}, {"id": 224, "type": "single", "question": "在社会主义改造基本完成后，中国人民面临的主要任务是0", "options": ["A. 探索社会主义建设道路", "B. 全面确立社会主义制度", "C. 进一步推进工业化、现代化建设", "D. 正确处理人民内部矛盾"], "answer": ["A"]}, {"id": 225, "type": "single", "question": "下列各项最能说明五四运动标志着新民主主义革命开始的是：（）", "options": ["A. 在十月革命的影响下爆发", "B. 提出反帝反封建的革命口号", "C. 具有初步共产主义思想的知识分子起了领导作用", "D. 无产阶级成为运动的主力军"], "answer": ["D"]}, {"id": 226, "type": "single", "question": "五四运动是中国新民主主义革命开始的标志，最主要的依据是： ()", "options": ["A. 提出彻底地反帝反封建口号", "B. 十月革命影响与马克思主义传播", "C. 青年学生领导并有广泛的群众基础", "D. 无产阶级成为运动主力"], "answer": ["D"]}, {"id": 227, "type": "single", "question": "(）成为1956年9月召开的中共八大的指导思想", "options": ["A. 《论十大关系》", "B. 《矛盾论》", "C. 《实践论》", "D. 《解放思想，实事求是》"], "answer": ["A"]}, {"id": 228, "type": "single", "question": "中国共产党的先驱们创建了中国共产党，形成了坚持真理、坚守理想，践行初心、 担当使命，不怕牺牲、英勇斗争，对党忠诚、不负人民的伟大（），这是中国共产党的（）。", "options": ["A. 爱国精神，宝贵财富", "B. 建党精神，精神之源", "C. 宝贵财富，精神之源", "D. 灵魂,精神源泉"], "answer": ["B"]}, {"id": 229, "type": "single", "question": "三民主义要解决的主要问题是： ()", "options": ["A. 中华民族和帝国主义的矛盾", "B. 封建主义和人民大众的矛盾", "C. 民族资产阶级和满洲贵族的矛盾", "D. 革命派和立宪派的矛盾"], "answer": ["B"]}, {"id": 230, "type": "single", "question": "前期新文化运动的指导思想是： ()", "options": ["A. 资产阶级维新思想", "B. 民主和科学的思想", "C. \"兼容并包\"的思想", "D. 社会主义的思想"], "answer": ["B"]}, {"id": 231, "type": "single", "question": "1938年9月至11月，中国共产党在延安举行了扩大的六届六中全会。毛泽东明 确提出（）的命题。", "options": ["A. 马克思主义中国化", "B. 实践是检验真理的唯一标准", "C. 反对教条主义", "D. 马克思主义与中国传统文化相结合"], "answer": ["A"]}, {"id": 232, "type": "single", "question": "\"四个现代化\"的宏伟目标是在第（）届全国人民代表大会提出来的 C: FU鸢院", "options": ["A. 五", "B. 四", "D. 二"], "answer": ["C"]}, {"id": 233, "type": "single", "question": "1978年关于真理标准问题的讨论，是为了解决中国共产党的: ()", "options": ["A. 组织路线问题", "B. 思想路线问题", "C. 政治路线问题", "D. 社会主义初级阶段的基本路线问题"], "answer": ["B"]}, {"id": 234, "type": "single", "question": "我国进入社会主义社会的时间是： :0", "options": ["A. 1945年", "B. 1949年", "C. 1956年", "D. 1966年"], "answer": ["C"]}, {"id": 235, "type": "single", "question": "从1978年开始在（）探索试行包产到组、包产到户、包干到户的农业生产责任 制。", "options": ["A. 安徽、四川", "B. 安徽、湖南", "C. 四川、山东", "D. 四川、湖南"], "answer": ["A"]}, {"id": 236, "type": "single", "question": "人民公社化运动对我国国民经济造成严重伤害，其错误的实质是： ()", "options": ["A. 生产关系的调整不符合生产力的实际水平", "B. 打破国家财政收支平衡", "C. 破坏国民经济正常的比例关系", "D. 没有注意到生态环境的保护"], "answer": ["A"]}, {"id": 237, "type": "single", "question": "在中国大地上，率先举起马克思主义旗帜的是（)", "options": ["A. 孙中山", "B. 陈独秀", "C. 李大钊", "D. 瞿秋白"], "answer": ["C"]}, {"id": 238, "type": "single", "question": "规定割让香港岛的是： () U马院", "options": ["A. 《南京条约》", "B. 《虎门条约》", "C. 《天津条约》", "D. 《北京条约》"], "answer": ["A"]}, {"id": 239, "type": "single", "question": "有的西方学者说鸦片战争是\"维护商业\"的战争，对这种观点评述正确的是：（） (1）是对战争原因深层次的思考（2）混淆了现象和本质的关系（3）为侵略战争辩护（4) 反映了东西方思维方式的不同。 （3} C: (2) (3) (3) (4)", "options": ["A. (1）", "B. (2）{4)", "D. (1)"], "answer": ["C"]}, {"id": 240, "type": "single", "question": "鸦片战争以后，资本-帝国主义列强通过发动侵略战争,强迫中国签订一系列不平 等条约，破坏中国的()主权、()主权、()主权、()主权等，并一步一步地控制中国的政治、经 济、外交和军事，中国已经丧失了完全独立的地位，在相当程度上被殖民地化了。", "options": ["A. 领土、领空、关税、司法", "B. 领土、领海、领空、税收", "C. 领土、领海、关税、司法", "D. 领空、领海、关税、司法"], "answer": ["C"]}, {"id": 241, "type": "single", "question": "中共八大坚持的经济建设方针是：（）", "options": ["A. 综合发展", "B. 平衡发展", "C. 重点发展重工业", "D. 综合平衡中稳步前进"], "answer": ["D"]}, {"id": 242, "type": "single", "question": "中国近代史上，共和政体确立的标志是： ()", "options": ["A. 湖北军政府成立", "B. 南京临时政府成立", "C. 清帝退位", "D. 袁世凯当选为临时大总统"], "answer": ["B"]}, {"id": 243, "type": "single", "question": "中国共产党二大的中心任务是： ()", "options": ["A. 确定党的最高奋斗目标", "B. 建立党的各级组织", "C. 制定革命统一战线政策", "D. 制定党的民主革命纲领"], "answer": ["D"]}, {"id": 244, "type": "single", "question": "孙中山建立的第一个资产阶级革命团体是： ()", "options": ["A. 华兴会", "B. 兴中会", "C. 光复会", "D. 岳王会"], "answer": ["B"]}, {"id": 245, "type": "single", "question": "在近代中国，民族资产阶级提出的建国方案是要： () 程序", "options": ["A. 继续半殖民地半封建的旧中国", "B. 建立资产阶级共和国", "C. 建立新民主主义共和国", "D. 建立人民民主共和国"], "answer": ["B"]}, {"id": 246, "type": "single", "question": "1947年 10月发表的《中国人民解放军宣言》提出了： O D“三军配合、两翼牵制\"的战略部署", "options": ["A. 土地改革的总路线", "B. 打倒蒋介石，解放全中国", "C. 新民主主义革命总路线"], "answer": ["B"]}, {"id": 247, "type": "single", "question": "辛亥革命前，保路运动规模最大的省是： ()", "options": ["A. 湖北", "B. 四川", "C. 湖南", "D. 广东"], "answer": ["B"]}, {"id": 248, "type": "single", "question": "大革命失败以后，中国革命得以继续发展的原因在于：（）①中国共产党在南方 各省建立了一些根据地2中国共产党的反帝反封建的革命纲领得到传播3广大的人民群众 接受了一次革命的洗礼④中国共产党开始掌握了一部分革命武装", "options": ["A. 123", "B. 234", "C. 024", "D. 134"], "answer": ["B"]}, {"id": 249, "type": "single", "question": "初期新文化运动的实质是： (0 账", "options": ["A. 新文学运动", "B. 民主、民权运动", "C. 反封建礼教的运动", "D. 资产阶级民主主义运动"], "answer": ["D"]}, {"id": 250, "type": "single", "question": "《关于建国以来党的若干历史问题的决议》通过的会议是： ：）全会", "options": ["A. 中共十一届三中", "B. 中共十一届四中", "C. 中共十一届五中", "D. 中共十一届六中"], "answer": ["D"]}, {"id": 251, "type": "single", "question": "1942年5月，毛泽东在（）上发表讲话，全面总结五四运动以来中国革命文艺 运动的历史经验，深刻阐明和发展了马克思主义的文艺理论，为中国革命文艺的发展指明了 正确方向。", "options": ["A. 遵义会议", "B. 中共七大", "C. 七届二中全会", "D. 延安文艺座谈会"], "answer": ["D"]}, {"id": 252, "type": "single", "question": "我国在社会主义改造中对资本主义工商业实行全行业公私合营后采取的赎买政 策是：（)", "options": ["A. \"四马分肥”", "B. 定股定息", "C. 加工订货、统购包销", "D. 国家资本主义"], "answer": ["B"]}, {"id": 253, "type": "single", "question": "新民主主义革命的胜利，社会主义基本制度的建立，为当代中国一切发展进步奠 定了（）基础", "options": ["A. 政治和经济", "B. 经济与文化", "C. 根本政治前提和制度", "D. 政治和制度"], "answer": ["C"]}, {"id": 254, "type": "single", "question": "1931年11月，中国共产党成立了中华苏维埃共和国临时中央政府，其政权性质 是：（）", "options": ["A. 资产阶级专政", "B. 各革命阶级（包括民族资产阶级和小资产阶级）联合专政", "C. 抗日民主专政", "D. 工农民主专政"], "answer": ["D"]}, {"id": 255, "type": "single", "question": "《中华民国临时约法》是： 0", "options": ["A. 中国第一部资产阶级性质的成文法", "B. 一部不彻底的资产阶级宪法", "C. 一部仍然带有封建色彩的宪法", "D. 一部反映小资产阶级利益的宪法"], "answer": ["A"]}, {"id": 256, "type": "single", "question": "是适应西方资本主义的发展要求而产生的，它随着资本主义生产方式的演进而 发展，是西方列强对亚洲、非洲、美洲、大洋洲等地区人民的剥削、掠夺和压迫、奴役.它 是为资产阶级剥削国内外人民、建立资本主义的世界体系服务的。", "options": ["A. 帝国主义", "B. 霸权主义", "C. 资本-帝国主义", "D. 殖民主义"], "answer": ["D"]}, {"id": 257, "type": "single", "question": "，戊戌变法\"的内容不包括 )", "options": ["A. 允许官民上书言事", "B. 精练陆军，改习洋操", "C. 废除科举制度", "D. 中央设立农工商总局与铁路矿务总局"], "answer": ["C"]}, {"id": 258, "type": "single", "question": "海关管理权的丧失对中国造成的最严重的后果是： 0", "options": ["A. 中国成为世界上关税最低的国家", "B. 便利列强通过海关控制中国外交", "C. 有利于西方倾销商品和掠夺原料", "D. 民族工业失去了关税保护"], "answer": ["D"]}, {"id": 259, "type": "single", "question": "近代中国社会的性质是： ()", "options": ["A. 封建社会", "B. 半殖民地半封建社会", "C. 半资本主义社会", "D. 资本主义社会"], "answer": ["B"]}, {"id": 260, "type": "single", "question": "鸦片战争后，中国经济逐渐被卷入世界资本主义市场，其对中国的影响不包括： ()", "options": ["A. 自给自足的自然经济逐步解体", "B. 西方的先进生产技术逐步传入中国", "C. 英国对华输出商品激增", "D. 封建地主土地所有制瓦解"], "answer": ["D"]}, {"id": 261, "type": "single", "question": "中国革命的主要形式是： ()", "options": ["A. 议会斗争", "B. 群众斗争", "C. 地下斗争", "D. 武装斗争"], "answer": ["D"]}, {"id": 262, "type": "single", "question": "中共一大确定的党的中心任务是：（）", "options": ["A. 实现共产主义", "B. 加强无产阶级国际团结", "C. 领导和组织工人运动", "D. 推翻资产阶级政权"], "answer": ["C"]}, {"id": 263, "type": "single", "question": "革命的根本问题是（） D反帝问题", "options": ["A. 武装斗争", "B. 国家政权问题", "C. 土地问题"], "answer": ["B"]}, {"id": 264, "type": "single", "question": "中国特色社会主义进入新时代，中国的国际地位发生了历史性的变化，正（） 五年来，中国发挥负责任大国作用，积极推动（），做世界和平的建设者、全球发展的贡献 者、国际秩序的维护者，不断为人类作出更大贡献。", "options": ["A. 走进世界舞台中央，构建大同世界", "B. 日益走近世界舞台中央，构建人类命运共同体", "C. 日益成为世界舞台中心，构建人类命运共同体", "D. 日益走近世界舞台中央，构建人类共同体"], "answer": ["B"]}, {"id": 265, "type": "single", "question": "通过一五计划的会议是（)", "options": ["A. 二届二中全会", "B. 三届一中全会", "C. 五届三中全会", "D. 一届全国人大二次会议"], "answer": ["D"]}, {"id": 266, "type": "single", "question": "我国社会主义初级阶段起始于： ()", "options": ["A. 中华人民共和国成立", "B. 国民经济恢复任务完成", "C. \"文化大革命\"结束", "D. 对生产资料私有制社会主义改造任务完成"], "answer": ["D"]}, {"id": 267, "type": "single", "question": "新中国成立初期，中国共产党和中国政府对解决香港、澳门问题采取的方针是（） U马院", "options": ["A. 暂时不提，以后再说", "B. 准备条件，一举收回", "C. 暂时不动，待机收回", "D. ：暂时不动，待条件成熟时通过谈判解决"], "answer": ["D"]}, {"id": 268, "type": "single", "question": "新中国成立后，党领导人民完成民主革命的遗留任务不包括0", "options": ["A. 镇压反革命运动", "B. 改造资本主义工商业", "C. 土地改革", "D. 废除封建婚姻制度", "E. 召开各级各界人民代表大会"], "answer": ["B"]}, {"id": 269, "type": "single", "question": "毛泽东提出\"一年到十五年基本上完成社会主义，不是十年以后才过渡到社会主 义\"，是在（)", "options": ["A. 中共中央书记处会议", "B. 七届三中全会", "C. 七届四中全会", "D. 八大"], "answer": ["A"]}, {"id": 270, "type": "single", "question": "1915年开始的民主、科学与尊孔复古的论战实质是：（)", "options": ["A. 资产阶级与封建地主阶级的思想论战", "B. 无产阶级与资产阶级的思想论战", "C. 马克思主义与改良主义的论战", "D. 西方文明与中华传统文化之间的冲突"], "answer": ["A"]}, {"id": 271, "type": "single", "question": "1931年1月至1935年1月以王明为代表的\"左\"倾机会主义。在军事斗争问题上 实行进攻中的：（)", "options": ["A. 冒险主义", "B. 逃跑主义", "C. 保守主义", "D. 机会主义"], "answer": ["A"]}, {"id": 272, "type": "single", "question": "太平天国后期担任军事指挥的青年将领： ()", "options": ["A. 杨秀清、石达开", "B. 萧朝贵、冯云山", "C. 陈玉成、李秀成", "D. 石达开、韦昌辉"], "answer": ["C"]}, {"id": 273, "type": "single", "question": "以下哪个是外国侵略者控制中国政治的重要手段之一： () U马院", "options": ["A. 赔款", "B. 把持中国海关", "C. 制造舆论", "D. 进行宗教宣传"], "answer": ["B"]}, {"id": 274, "type": "single", "question": "洋务运动之所以没有达到\"师夷长技以自强\"的目的，是因为： 0", "options": ["A. 沿用传统的生产管理方式", "B. 局限于引进西方先进科技", "C. 外国资本的积压", "D. 没有相对稳定的\"和平环境\""], "answer": ["B"]}, {"id": 275, "type": "single", "question": "太平天国由盛转衰的标志是 0", "options": ["A. 安庆失陷", "B. 天京变乱", "C. 洪秀全病逝", "D. 天京陷落"], "answer": ["B"]}, {"id": 276, "type": "single", "question": "我国与列强签订的第一个不平等条约是： ()", "options": ["A. 《北京条约》", "B. 《马关条约》", "C. 《南京条约》", "D. 《天津条约》"], "answer": ["C"]}, {"id": 277, "type": "single", "question": "20 世纪中国经历了辛亥革命、中华人民共和国成立和改苹开放三次历史性巨变， 产生了孙中山、毛泽东和()三个站在时代前列的伟大人物。", "options": ["A. 邓小亚", "B. 江泽民", "C. 胡锦涛", "D. 习近平"], "answer": ["A"]}, {"id": 278, "type": "single", "question": "第二次鸦片战争中，掠夺中国领土最多的侵略者是： ()", "options": ["A. 美国", "B. 英国", "C. 俄国", "D. 法国"], "answer": ["C"]}, {"id": 279, "type": "single", "question": "中国人民抗日战争胜利的决定因素是（）", "options": ["A. 爱国主义为核心的民族精神", "B. 中国共产党的中流砥柱作用", "C. 全民族抗战", "D. 世界各国的帮助和合作"], "answer": ["A"]}, {"id": 280, "type": "single", "question": "中国最早的资产阶级革命政党是：（） 么", "options": ["A. 保国会", "B. 华兴会", "C. 兴中会", "D. 同盟会"], "answer": ["D"]}, {"id": 281, "type": "single", "question": "史学界把维新变法、辛离革命和新文化运动都称为近代化运动，因为他们要求： () 公", "options": ["A. 实行资产阶级民主政治", "B. 提倡民主和科学", "C. 彻底废除旧制度", "D. 宣传新思想弘扬新文化"], "answer": ["A"]}, {"id": 282, "type": "single", "question": "十年对峙时期，红色政权能够发展壮大的主要原因是（）", "options": ["A. 建立于敌人力量薄弱的山区", "B. 当时新旧军阀混战激烈", "C. 得到了大量的国际授助物资", "D. 坚持了\"工农武装割据\"的思想"], "answer": ["D"]}, {"id": 283, "type": "single", "question": "井冈山时期，毛泽东提出红色政权存在与发展必须坚持：（）", "options": ["A. 武装斗争、土地革命、根据地建设", "B. 党的建设、武装斗争、土地革命", "C. 党的建设、武装斗争、统一战线", "D. 武装斗争、土地革命、统一战线"], "answer": ["A"]}, {"id": 284, "type": "single", "question": "1956年，中国工业建设上取得了许多突破，第一汽车制造厂的地点是：", "options": ["A. 长春", "B. 沈阳", "C. 武汉", "D. 南京"], "answer": ["A"]}, {"id": 285, "type": "single", "question": "解放战争时期，最早与蒋介石集团决裂的民主党派是： ()", "options": ["A. 中国民主同盟", "B. 民主建国会", "C. 中国民主促进会", "D. 中国国民党革命委员会"], "answer": ["A"]}, {"id": 286, "type": "single", "question": "1946年6月，国共两党全面内战爆发，其时世人议论纷纭。下列评论中，哪一 种更接近事实本质：（) 人", "options": ["A. 煮豆燃豆箕，相煎何太急", "B. 楚汉相争，成者为王败者为寇", "C. \"五四\"以来，社会势力演化之必然"], "answer": ["C"]}, {"id": 287, "type": "single", "question": "在 20世纪初出现的资产阶级革命组织中，孙中山领导的同盟会上第一个资产阶 级革命政党，因为它：（）", "options": ["A. 成立时间早", "B. 实现了革命团体的大联合", "C. 使资产阶级革命进入一个新阶段", "D. 有明确的资产阶级革命纲领和组织"], "answer": ["D"]}, {"id": 288, "type": "single", "question": "新文化运动前期的主要内容是：（）)提倡民主与科学，反对专制和愚味?②提 倡新道德，反对旧道德3提倡马克思主义，反对资产阶级改良主义4提倡新文学，反对旧文 学 B234 c:24", "options": ["A. 123", "D. 134"], "answer": ["C"]}, {"id": 289, "type": "single", "question": "毛泽东指出，新民主主义国家内部的主要矛盾是0", "options": ["A. 中华民族与帝国主义的矛盾", "B. 人民对于经济文化迅速发展的需要同当前经济文化不能满足人民需要的状况之间的矛盾", "C. 无产阶级与资产阶级的矛盾", "D. 人民大众与封建主义的矛盾"], "answer": ["B"]}, {"id": 290, "type": "single", "question": "1930年6月至9月以（)为代表的“左\"倾冒险主义，错误地认为中国革命乃至世 界革命进入高潮，盲目要求举行全国暴动和集中红军力量攻打武汉等中心·城市。", "options": ["A. 李立三", "B. 瞿秋白", "C. 王明", "D. 陈独秀"], "answer": ["A"]}, {"id": 291, "type": "single", "question": "1926年3月20日，蒋介石为了排斥、打击中共和国民党左派，进一步夺取权力， 一手策划了（) D\"七.一五\"反革命政变", "options": ["A. 中山舰事件", "B. 整理党务案", "C. \"四.一二\"反革命政变"], "answer": ["A"]}, {"id": 292, "type": "single", "question": "1936年10月，中国工农红军第 四方面军胜利会师于： ()", "options": ["A. 陕北保安地区", "B. 、陕北洛川地区", "C. 陕北瓦客堡地区", "D. 甘肃会宁、静宁地区"], "answer": ["D"]}, {"id": 293, "type": "single", "question": "20世纪初第一场帝国主义战争\"日俄战争\"发生在中国的： )", "options": ["A. 东北地区", "B. 山东半岛", "C. 东南沿海", "D. 长江流域"], "answer": ["A"]}, {"id": 294, "type": "single", "question": "《马关条约》使列强对中国的侵略进入新阶段的主要含义是：（）", "options": ["A. 由沿海地区进入内地、内河", "B. 由商品输出为主变为资本输出为主", "C. 列强自此掀起了资本输出和瓜分中国的狂潮", "D. 列强自此形成了宰割中国的同盟"], "answer": ["C"]}, {"id": 295, "type": "single", "question": "李鸿章是中国近代史上的一个重要人物，他镇压了太平军和捻军起义，签订了《中 法新约》、《中日马关条约》和《辛丑条约》等一系列不平等条约，在许多方面负有不可推 卸的责任。但李鸿章仍有值得肯定之处，其中最为典型的是：（）", "options": ["A. 掀起\"向西方学习\"的新思潮", "B. 是洋务运动的主要实践者", "C. 与顽固派进行论", "D. 率兵收复新疆"], "answer": ["B"]}, {"id": 296, "type": "single", "question": "沙俄先是利用英法发动第二次鸦片战争之机，在1858年胁迫黑龙江将军奕山签 订条约，割去黑龙江以北60 万平方公里领土。后又在1860年，通过签订中俄（），割去 乌苏里江以东40 万平方公里的中国领土。", "options": ["A. 《北京条约》", "B. 《瑷珲条约》", "C. 《中俄勘分西北界约记》", "D. 《天津条约》"], "answer": ["A"]}, {"id": 297, "type": "single", "question": "1851年1月，洪秀全率拜上帝教教众发动起义，建号太平天国是在： ()", "options": ["A. 金田村", "B. 桂林", "C. 武昌", "D. 天京"], "answer": ["A"]}, {"id": 298, "type": "single", "question": "五四运动前后，人们对社会主义还只是朦胧的向往。当时有、工团主义、基尔特 (行会）社会主义、社会民主主义以及新村主义、泛劳动主义等，各种社会主义流派的观点 在各种报刊上纷然杂陈。各种社会主义流派，其中（）占优势。中国先进分子是经过反复比 较才选择马克思主义的。", "options": ["A. 社会民主主义", "B. 新村主义", "C. 工团主义", "D. :无政府主义"], "answer": ["D"]}, {"id": 299, "type": "single", "question": "\"九今三事件\"指的是：（）。它是\"文化大革命\"推翻党的一系列基本原则的结果， 客观上宣告了\"文化大革命\"的理论和实践的失败。", "options": ["A. \"文化大革命\"的全面发动", "B. 林彪反革命集团被粉碎", "C. 中央\"文革\"小组基本取代中央政治局的职能", "D. 江青反革命集团被粉碎"], "answer": ["B"]}, {"id": 300, "type": "single", "question": "中国共产党开创的第一块农村革命根据地是： 0", "options": ["A. 晋察冀根据地", "B. 井冈山根据地", "C. 湘鄂西根据地", "D. 鄂豫皖根据地"], "answer": ["B"]}, {"id": 301, "type": "single", "question": "中共二大制定民主革命纲领的依据是： ()", "options": ["A. 中共的中心任务", "B. 中共的奋斗目标", "C. 中国的社会性质和革命性质", "D. 中国无产阶级的特点"], "answer": ["C"]}, {"id": 302, "type": "single", "question": "同盟会的机关刊物是0 J马院", "options": ["A. 《民报》", "B. 《新民丛报》", "C. 《国民报》", "D. 《苏报》"], "answer": ["A"]}, {"id": 303, "type": "single", "question": "1945年8月28日，毛泽东与周恩来、王若飞等赴（人与国民党当局谈判。", "options": ["A. 重庆", "B. 南京", "C. 北京", "D. 上海"], "answer": ["A"]}, {"id": 304, "type": "single", "question": "新中国初期建立社会主义国营经济的主要途径是0", "options": ["A. 剥夺地主阶级财产", "B. 没收官僚资本", "C. 废除帝国主义在华特权", "D. 没收民族资产阶的财产"], "answer": ["B"]}, {"id": 305, "type": "single", "question": "孙中山领导的辛孩革命实现了20世纪中国第一次历史性巨变，因为这次次革命： ()", "options": ["A. 推翻了统治中国 2000多年的君主专制政体", "B. 确立了资产阶级民主共和制度", "C. 给予了人民充分的民主和自由权利", "D. 结束了帝国主义在中国的殖民统治"], "answer": ["A"]}, {"id": 306, "type": "single", "question": "北伐战争迅速发展的最主要原因是： 0", "options": ["A. 工农群众的大力支持", "B. 北伐将士的英勇普战", "C. 直奉联合战线的瓦解", "D. 国共两党团结合作和正确的北伐方针"], "answer": ["D"]}, {"id": 307, "type": "single", "question": "1919年3月，列宁领导的（）成立，它积极帮助包括中国在内的一些国家建立 共产党。", "options": ["A. 第一国际", "B. 第二国际", "C. 共产国际", "D. 国际共产党"], "answer": ["C"]}, {"id": 308, "type": "single", "question": "晚清有御史上奏折称：“近日人心浮动，民主民权之说日益猖獗。若准各省纷纷 立会，恐闻风而起，其患不可胜言\"。这个奏折针对的是：（）", "options": ["A. 太平军", "B. 洋务派", "C. 维新派", "D. 义和团"], "answer": ["C"]}, {"id": 309, "type": "single", "question": "把我国领土台湾割让日本的不平等条约是： ()", "options": ["A. 《马关条约》", "B. 《天津条约》", "C. 《北京条约》", "D. 《辛丑条约》"], "answer": ["A"]}, {"id": 310, "type": "single", "question": "鸦片战争后，中国茶和丝出口数量猛增，这一现象说明的实质是： ()", "options": ["A. 中国在对外贸易中逐渐变为出超", "B. 中国已被卷入资本主义世界市场", "C. 自然经济瓦解扩大了市场", "D. 茶和丝的生产日益商品化"], "answer": ["B"]}, {"id": 311, "type": "single", "question": "中共八大上，作关于修改党章报告的是： ()", "options": ["A. 毛泽东", "B. 刘少奇", "C. 周恩来", "D. 邓小亚"], "answer": ["D"]}, {"id": 312, "type": "single", "question": "在土地改革基本完成后，作为农村工作的一件大事来抓的是：（)", "options": ["A. 分散开来", "B. 组织起来", "C. 动员起来", "D. 发展经济"], "answer": ["B"]}, {"id": 313, "type": "single", "question": "辛亥革命的性质是：（)", "options": ["A. 全民革命", "B. 民族主义革命", "C. 新民主主义革命", "D. 比较完全意义上的资产阶级民主革命"], "answer": ["D"]}, {"id": 314, "type": "single", "question": "毛泽东回答了\"中国向何处去\"，全面阐述新民主主义的政治、经济和文化的文章 是：（)", "options": ["A. 《中国社会各阶级的分析》", "B. 《新民主主义论》", "C. 《中国革命和中国共产党》", "D. 《发刊词》"], "answer": ["B"]}, {"id": 315, "type": "single", "question": "清政府的\"预备立宪\"之所以是一场骗局，主要是因为： (} A", "options": ["A. 借\"预备\"之名拖延立宪", "B. 载沣任摄政王总揽大权", "C. 不能满足立宪派的要求", "D. 极力维护君主专制权力"], "answer": ["D"]}, {"id": 316, "type": "single", "question": "1953年开始的发展国民经济的第一个五年计划，作为建设的中心环节是（） 题小", "options": ["A. 继续发展农业", "B. 优先发展重工业", "C. 发展轻工业", "D. 积极发展第三产业"], "answer": ["B"]}, {"id": 317, "type": "single", "question": "1945年10月10日，国共双方签署了双一协定，确定的基本方针是： ()", "options": ["A. 再造民国", "B. 继续内战", "C. 和平建国", "D. 维护现状"], "answer": ["C"]}, {"id": 318, "type": "single", "question": "八七会议以后的中共中央依据（）的要求，在领导各地武装起义的过程中，也初 步提出了相机占领某个县或几个县、建立革命政权、实行武装割据的思想。", "options": ["A. \"找着新的道路\"", "B. \"发现新的方法\"", "C. \"寻找新的途径\"", "D. \"找着新的办法\""], "answer": ["A"]}, {"id": 319, "type": "single", "question": "1905 至 1907年间，资产阶级革命派与改良派论战的焦点是：（）", "options": ["A. 要不要以革命手段推翻清三朝", "B. 要不要推翻帝制，实行共和", "C. 要不要社会革命", "D. 改变还是维护旧的教育制度"], "answer": ["A"]}, {"id": 320, "type": "single", "question": "使近代中国沦为半殖民地半封建社会的第一个不平等条约是：（）", "options": ["A. 《字丑条约》", "B. 《南京条约》", "C. 《马关条约》", "D. 《北京条约》"], "answer": ["B"]}, {"id": 321, "type": "single", "question": "中国近现代史是指（）年以来的中国历史。", "options": ["A. 1840", "B. 1911", "C. 1945", "D. 1949"], "answer": ["A"]}, {"id": 322, "type": "single", "question": "维新派代表了哪一个阶级的利益和要求： ()", "options": ["A. 农民阶级", "B. 资产阶级", "C. 工人阶级", "D. 地主阶级"], "answer": ["B"]}, {"id": 323, "type": "single", "question": "变法维新运动的性质是： ()", "options": ["A. 资产阶级领导的反帝爱国运动", "B. 资产阶级领导的反封建运动", "C. 洋务运动的继续", "D. 资产阶级改良主义政治运动"], "answer": ["D"]}, {"id": 324, "type": "single", "question": "下列条约中，涉及即割地又赔款的是：(）①《南京条约》2《北京条约》3《马 关条约》4《辛丑条约》", "options": ["A. 1234", "B. T23", "C. 124", "D. 134"], "answer": ["B"]}, {"id": 325, "type": "single", "question": "中国共产党在新民主主义革命不同时期提出的土地政策的共同点是：（）①体现 中国共产党的民主革命纲领2消灭封建剥削制度3维护农民基本利益4促进社会经济发展 c:134", "options": ["A. 12", "B. 123", "D. 1234"], "answer": ["C"]}, {"id": 326, "type": "single", "question": "遵义会议后，中共中央政治局成立了新的三人团负责红军的军事行动，其成员是： ()", "options": ["A. 毛泽东、朱德、周恩来", "B. 毛泽东、朱德、三稼祥", "C. 毛泽东、周恩来、王稼祥", "D. 毛泽东、张闻天、周恩来"], "answer": ["C"]}, {"id": 327, "type": "single", "question": "五四运动取得初步胜利的根本原因是： () 衣", "options": ["A. 新文化运动促进作用", "B. 青年学生的先锋作用", "C. 工人阶级发挥了主力军的作用", "D. 十月革命的影响"], "answer": ["C"]}, {"id": 328, "type": "single", "question": "中国工农红军进行长征的直接原因是（)", "options": ["A. \"左\"倾思想的泛滥", "B. 右倾投降主义思想出现", "C. 中国共产党实行的战略转移", "D. 第五次反\"围剿\"的失利"], "answer": ["D"]}, {"id": 329, "type": "single", "question": "中国的资产阶级民主革命是由（）首先发动的。", "options": ["A. 维新派", "B. 保皇派", "C. 立宪派", "D. 革命派"], "answer": ["D"]}, {"id": 330, "type": "single", "question": "井冈山根据地的建立与巩固：（)", "options": ["A. 开辟了农村包围城市武装夺取政权的道路", "B. 是土地革命战争开始的标志", "C. 是中国共产党独立领导武装斗争的开端", "D. 确立了党对军队的绝对领导"], "answer": ["A"]}, {"id": 331, "type": "single", "question": "1958年7、8月，毛泽东在视察期间对（）的做法给与肯定", "options": ["A. 小社并大社", "B. 大社分小社", "C. 中社分小社", "D. 小社并中社"], "answer": ["A"]}, {"id": 332, "type": "single", "question": "在党的历史上，在极其危机的情况下挽救了党、挽救了工农红军、挽救了中国革 命的一个生死攸关的转折点是（）", "options": ["A. 古田会议", "B. 洛川会议", "C. 遵义会议", "D. 八七会议"], "answer": ["C"]}, {"id": 333, "type": "single", "question": "新文化运动中批孔实际上针对的是： ()", "options": ["A. 儒家思想文化", "B. 孔子思想学说", "C. 儒家传统道德", "D. 封建专制皇权"], "answer": ["C"]}, {"id": 334, "type": "single", "question": "1927年4月18日，南京国民政府正式建立。随着南京国民政府的建立，在中国 的土地上，就出现了南京、武汉和（心三个政权并存的局面 题小", "options": ["A. 上海", "B. 北京", "C. 广州", "D. 沈阳"], "answer": ["B"]}, {"id": 335, "type": "single", "question": "德法俄三国一起干涉\"还辽\"，充分表明： )", "options": ["A. 俄法德三国是同盟国", "B. 列强有维护中国主权独立的一面", "C. 日本已暂时独霸中国", "D. 帝国主义国家之间既矛盾又勾结"], "answer": ["D"]}, {"id": 336, "type": "single", "question": "对洋务派兴办洋务事业的指导思想最先作出比较完整表述的是： 0", "options": ["A. 奕龂", "B. 严复", "C. 郑观应", "D. 冯桂芬"], "answer": ["D"]}, {"id": 337, "type": "single", "question": "武昌起义爆发后，控制大部分地方政权的是： ()", "options": ["A. 革命党人", "B. 北洋军阀和旧官僚", "C. 袁世凯的亲信", "D. 立宪派和旧官僚"], "answer": ["D"]}, {"id": 338, "type": "single", "question": "\"三个代表\"思想是在中共（）上作为党的指导思想，写入党章。", "options": ["A. 中共十七大", "B. 中国共产党成立80周年大会", "C. 十六届一中全会", "D. 十六大"], "answer": ["D"]}, {"id": 339, "type": "single", "question": "毛泽东着重阐述党必须依靠农民和掌握枪杆子的思想的会议是（）", "options": ["A. 中共二大", "B. 中共五大", "C. 八七会议", "D. 洛川会议"], "answer": ["C"]}, {"id": 340, "type": "single", "question": "国民革命失败后，标志着中国共产党创立红军开始的事件是：（）", "options": ["A. 南昌起义", "B. 秋收起义", "C. 广州起义", "D. 平江起义"], "answer": ["A"]}, {"id": 341, "type": "single", "question": "国家资本主义的高级形式是： 0 O", "options": ["A. 委托加工", "B. 公私联营", "C. 经销代销", "D. 公私合营"], "answer": ["D"]}, {"id": 342, "type": "single", "question": "1903年邹容写的（）是中国近代史上第一部宣传革命和资产阶级共和国思想的 著作。", "options": ["A. 《警世钟》", "B. 《猛回头》", "C. 《革命军》", "D. 《驳康有为论革命书》"], "answer": ["C"]}, {"id": 343, "type": "single", "question": "19 世纪·60年代，清朝统治集团中倡导洋务的首领人物是： 0", "options": ["A. 奕近", "B. 桂良", "C. 曾国藩", "D. 李鸿章"], "answer": ["A"]}, {"id": 344, "type": "single", "question": "19世纪末20 世纪初，外国在华侵略势力中，占主要地位的是： ()", "options": ["A. 日本", "B. 英国", "C. 美国", "D. 法国"], "answer": ["B"]}, {"id": 345, "type": "single", "question": "洋务派创办民用企业的直接目的是： ()", "options": ["A. 发展民族工商业", "B. 解决军事工业资金、，燃料等方面的困难", "C. 抵制外国经济势力的扩张", "D. 充实国库,弥补财政亏空"], "answer": ["B"]}, {"id": 346, "type": "single", "question": "中国共产党独立领导革命战争和创建人民军队的开始是： 0 小程房", "options": ["A. 南昌起义", "B. 八七会议", "C. 秋收起义", "D. 广州起义"], "answer": ["A"]}, {"id": 347, "type": "single", "question": "国共合作的统一战线建立时，中共认为\"中国现存的各政党，只有国民党是比较 革命的民主派，比较是真的民主派\"。这一论断的主要依据是： ()", "options": ["A. 孙中山领导的国民党进行了不屈不挠的反封建斗争", "B. 孙中山代表各阶级、各阶层的利益", "C. 国民党在广东建立了革命根据地和军队", "D. 国民党代表民族资产阶级和小资产阶级的利益"], "answer": ["A"]}, {"id": 348, "type": "single", "question": "20世纪中国经历了三次历史性巨变，其中第二次是指（）", "options": ["A. 辛安革命的胜利和中华民国的成立", "B. 新民主主义革命的胜利和人民民主专政制度的建立", "C. 中华人民共和国的成立和社会主义制度的建立", "D. 社会主义改造的完成和全面建设社会主义的开始"], "answer": ["C"]}, {"id": 349, "type": "single", "question": "1917 年1月，北京大学校长蔡元培聘：（）为北大文科学长。《新青年》编辑 部也随之迁至北京。", "options": ["A. 李大钊", "B. 鲁迅", "C. 胡适", "D. 陈独秀"], "answer": ["D"]}, {"id": 350, "type": "single", "question": "1934年长征初期，中共中央领导人博古等又犯了逃跑主义错误。在强渡湘江之 后，红军人数锐由8.6 万多人减到（）多人 S", "options": ["A. 1万", "B. 2万", "C. 3万", "D. 4 万"], "answer": ["C"]}, {"id": 351, "type": "single", "question": "0)的发展逐步使人类历史成为世界历史：西方资产阶级迫使一切民族采用资产阶 级的生产方式，一句话，它按照自己的面貌为自己创造出一个世界。", "options": ["A. 资本主义", "B. 帝国主义", "C. 资本-帝国主义", "D. 帝国-资本主主义"], "answer": ["A"]}, {"id": 352, "type": "single", "question": "之所以把鸦片战争作为中国近代史的开端，最主要根据是： ()", "options": ["A. 中国人民在反封建的同时还要反侵略", "B. 清王朝开始变为西方列强统治中国的工具", "C. 中国经济开始卷入世界资本主义市场", "D. 中国社会性质发生了变化"], "answer": ["D"]}, {"id": 353, "type": "single", "question": "洋务运动破产的根本原因是：（)", "options": ["A. 西方列强的破坏", "B. 顽固派的阻挠", "C. 在中央缺乏一个健全、有力的领导核心", "D. 引进西方技术设备，而没有变革封建制度"], "answer": ["D"]}, {"id": 354, "type": "single", "question": "全面内战爆发不久，毛泽东代表中共提出了\"必须打败蒋介石\"的论断，原因是： ()", "options": ["A. 蒋介石发动的战争，是反对中国民族独立和中国人民解放的反革命的战争", "B. 蒋介石是美国的代理人", "C. 蒋介石试图继续维护现状", "D. 蒋介石是我们的阶级敌人"], "answer": ["A"]}, {"id": 355, "type": "single", "question": "抗日战争胜利后，中国社会的主要矛盾是： （)", "options": ["A. 中美民族矛盾", "B. 中日民族矛盾", "C. 无产阶级同资产阶级的矛盾", "D. 中国人民同美帝国主义支持的国民党反动派之间的矛盾"], "answer": ["D"]}, {"id": 356, "type": "single", "question": "与孙中山领导的反对北洋军阀的斗争相比，北伐战争的一个显著特点是： ()", "options": ["A. 依靠\"新军\"反对北洋军阀", "B. 依靠革命武装反对北洋军阀", "C. 依靠会党反对北洋军阀", "D. 依靠地方军阀反对北洋军阀"], "answer": ["B"]}, {"id": 357, "type": "single", "question": "《中苏友好同盟互助条约》签订后，中苏两国的同盟关系是： ()", "options": ["A. 平等互助", "B. 平等合作", "C. 不平等", "D. 相互利用"], "answer": ["A"]}, {"id": 358, "type": "single", "question": "建国之初，针对美国等国封锁、遏制新中国等情况，以毛泽东为主要代表的中国 共产党人提出了\"另起炉灶\"、\"打扫干净屋子再请客\"及（）的外交方针。 A“一边倒”", "options": ["B. \"两边倒\"", "C. \"远交近攻”", "D. \"骑墙式"], "answer": ["A"]}, {"id": 359, "type": "single", "question": "1931年1月至1935年1月以（）为代表的“左\"倾机会主义，使中国革命的复兴受 到严重挫折", "options": ["A. 李立三", "B. 瞿秋白", "C. 主明", "D. 陈独秀"], "answer": ["C"]}, {"id": 360, "type": "single", "question": "1935年1月召开的（）成为中国共产党历史上一个生死攸关的转折点，标志着 中国共产党在政治上从幼年达到了成熟", "options": ["A. 八七会议", "B. 古田会议", "C. 中共七大", "D. 遵义会议"], "answer": ["D"]}, {"id": 361, "type": "single", "question": "在维新派推动下实行\"戊戌变法\"的清帝是：（)", "options": ["A. 咸丰皇帝", "B. 同治皇帝", "C. 光绪皇帝", "D. 宣统皇帝"], "answer": ["C"]}, {"id": 362, "type": "single", "question": "下列各项属于孙中山\"三民主义\"中\"民生主义\"的是： () B推翻君主专制政体，建立国民政府", "options": ["A. 反对满洲贵族，反对民族压迫", "C. 国民有言论、集会、著作自由", "D. 核定地价、征收地租税，向地主收买土地"], "answer": ["D"]}, {"id": 363, "type": "single", "question": "民国初年两次帝制复辟失败的共同原因是： ()", "options": ["A. 资产阶级力量强大", "B. 孙中山高举反复辟旗帜", "C. 北洋军阀内部矛盾激化", "D. 经过辛家革命民主共和的观念深入人心"], "answer": ["D"]}, {"id": 364, "type": "single", "question": "1956年4月，毛泽东在《论十大关系》中提出的建设社会主义的基本方针是： () C鼓足干劲，力争上游，多快好省地建设社会主义", "options": ["A. 要把国内外一切积极因素调动起来，为社会主义事业服务", "B. 在综合平衡中稳步前进", "D. 调整、巩固、充实、提高"], "answer": ["A"]}, {"id": 365, "type": "single", "question": "林彪在密谋杀害毛泽东未遂后，于1971 年9月13日凌晨仓皇出逃，在蒙古人民 共和国境内温都尔汗附近坠机身亡。发生林彪反革命集团阴谋夺取最高权力、策动反革命武 装政变的事件，是“文化大革命\"推翻党的一系列基本原则的结果，客观上宣告了“文化大革 命\"的）", "options": ["A. 正式结末", "B. 实践的先败", "C. 理论的失败", "D. 理论和实践的失败"], "answer": ["D"]}, {"id": 366, "type": "single", "question": "1935年12月，毛泽东作了（）的报告，阐明党的抗日民族统一战线的新政策", "options": ["A. 《中国革命战争的战略问题》", "B. 《实践论》", "C. 《论反对日本帝国主义的策略》", "D. 《矛盾论》"], "answer": ["C"]}, {"id": 367, "type": "single", "question": "义和团对后人最具激励作用的是：（)", "options": ["A. 改良主义思潮", "B. 爱国主义精神", "C. 排斥外国思想", "D. 民主主义精神"], "answer": ["B"]}, {"id": 368, "type": "single", "question": "1840年鸦片战争前，中国封建社会的主要矛盾是： ()", "options": ["A. 地主阶级和农民阶级的矛盾", "B. 地主阶级和资产阶级的矛盾", "C. 工人阶级和资产阶级的矛盾", "D. 资产阶级和农民阶级的矛盾"], "answer": ["A"]}, {"id": 369, "type": "single", "question": "太平天国失败的标志是： ()", "options": ["A. 北伐的失败", "B. 天京事变", "C. 天京陷落", "D. 洪秀全逝世"], "answer": ["C"]}, {"id": 370, "type": "single", "question": "习近平新时代中国特色社会主义思想的核心要义（)", "options": ["A. 坚持中国共产党的领导", "B. 坚持社会主义道路", "C. 坚持和发展中国特色社会主义", "D. 坚持四项基本原则"], "answer": ["C"]}, {"id": 371, "type": "single", "question": "新中国成立后的头三年，全国人民集中力量要完成的主要任务中不包括：（）", "options": ["A. 完成民主革命遗留任务", "B. 改造资本主义工商业", "C. 恢复国民经济", "D. 争取国家财政经济状况的基本好转"], "answer": ["B"]}, {"id": 372, "type": "single", "question": "农民走向社会主义的几种过渡性经济组织形式中，具有半社会主义性质的是：（）", "options": ["A. 国营经济", "B. 公有经济", "C. 小农经济", "D. 初级农业生产合作社"], "answer": ["D"]}, {"id": 373, "type": "single", "question": "\"二次革命\"的导火线是： ()", "options": ["A. 宋教仁被刺", "B. 段祺瑞拒绝恢复《临时约法》", "C. 袁世凯称帝", "D. 张助复辟闹剧"], "answer": ["A"]}, {"id": 374, "type": "single", "question": "在檀香山召开的兴中会成立大会，通过了由孙中山亲自草拟的《兴中会章程》 在章程中，孙中山喊出了（）的口号。", "options": ["A. \"物竞天择，适者生存”", "B. \"振兴中华\"", "C. \"不自由，毋宁死\"", "D. \"自由、平等、博爱”"], "answer": ["B"]}, {"id": 375, "type": "single", "question": "中共八大提出党和全国人民当前的主要任务是： 0 NOFU马院 衣", "options": ["A. 把我国从落后的农业国变为先进的工业国", "B. 正确处理人民内部矛盾", "C. 把我国建设成为富强、民主、文明的国家", "D. 坚持四项基本原则，坚持改革开放"], "answer": ["A"]}, {"id": 376, "type": "single", "question": "中共二大提出了党的民主革命纲领表明： )", "options": ["A. 党的宗旨发生了变化", "B. 党在实践中走向成熟", "C. 党在不断修正自己的错误", "D. 党对中国国情的认识加深"], "answer": ["D"]}, {"id": 377, "type": "single", "question": "1958年，人民公社实行的体制是： ()", "options": ["A. 政教合", "B. 政体变更", "C. 政社合一", "D. 宗教合"], "answer": ["C"]}, {"id": 378, "type": "single", "question": "辛核革命的先败是指（)", "options": ["A. 推翻了皇帝", "B. 推翻了封建君主专制制度", "C. 在一定程度上打击了帝国主义的侵略势力", "D. 中国仍旧在帝国主义封建主义的压迫之下，并没有完成反帝反封建的任务"], "answer": ["D"]}, {"id": 379, "type": "single", "question": "洋务派不主张进行政治变革的根本原因是： )", "options": ["A. 看不到资本主义制度的先进性", "B. 认为富国强兵就可以改变一切", "C. 其大多数靠镇压太平天国起家", "D. 他们本身是封建大官僚大地主"], "answer": ["D"]}, {"id": 380, "type": "single", "question": "中华人民共和国的成立，标志着中国的（）取得了基本胜利。", "options": ["A. 土地革命", "B. 新民主主义革命", "C. 抗美援朝", "D. 土地改革"], "answer": ["B"]}, {"id": 381, "type": "single", "question": "三大战役的胜利，是：（）的胜利。", "options": ["A. 克思主义", "B. 列宁主义", "C. 邓小平理论", "D. 毛泽东军事思想"], "answer": ["D"]}, {"id": 382, "type": "single", "question": "据中共六大时的不完全统计：从 1927年3月到 1928年上半年，被杀害的共产党 员和革命群众达（）多人，其中共产党员26000多人。", "options": ["A. 5万", "B. 13万", "C. 31万", "D. 35万"], "answer": ["C"]}, {"id": 383, "type": "single", "question": "第一次世界大战结束后，对我国日益构成主要威胁的外国侵略势力是：（） 小口", "options": ["A. 美国", "B. 英国", "C. 日本", "D. 法国"], "answer": ["C"]}, {"id": 384, "type": "single", "question": "农业合作化基本完成的时间是： ()", "options": ["A. 1955年底", "B. 1956年底", "C. 1957年底", "D. 1958年底"], "answer": ["B"]}, {"id": 385, "type": "single", "question": "太平天国之所以是中国农民战争的最高峰，最主要是因为： ()", "options": ["A. 其规模和延续时间均属空前", "B. 建立了与清政府对立的政权", "C. 制定了比较完整的革命纲领", "D. 对封建王朝的打击空前沉重"], "answer": ["C"]}, {"id": 386, "type": "single", "question": "王明\"左\"倾冒险主义的主要特征是： ()", "options": ["A. 经验主义", "B. 教条主义", "C. 主观主义", "D. 宗派主义"], "answer": ["B"]}, {"id": 387, "type": "single", "question": "（）是立国之本。", "options": ["A. 四项基本原则", "B. 改革", "C. 开放", "D. 发展"], "answer": ["A"]}, {"id": 388, "type": "single", "question": "中国近代史的起点是： (0", "options": ["A. 第一次鸦片战争", "B. 第二次鸦片战争", "C. 甲午战争", "D. 八国联军侵华战争"], "answer": ["A"]}, {"id": 389, "type": "single", "question": "1947年刘邓大军挺进中原的重大意义在于：（)", "options": ["A. 影响战略决战主攻方向", "B. 粉碎蒋介石的重点进攻", "C. 改变敌我双方的力量对比", "D. 改变解放战争的战略态势"], "answer": ["D"]}, {"id": 390, "type": "single", "question": "\"十四大\"以后，中共采取（）方针加强社会主义精神文明建设", "options": ["A. \"两手抓\"", "B. 依法治国", "C. 以德治国", "D. \"两手抓，两手都要硬"], "answer": ["D"]}, {"id": 391, "type": "single", "question": "1967年1月，上海造反派的头目（)", "options": ["A. 姚文元", "B. 康生", "C. 王洪文", "D. 江青"], "answer": ["C"]}, {"id": 392, "type": "single", "question": "邓小平强调，（）才是硬道理 FU马院", "options": ["A. 改革", "B. 创新", "C. 开放", "D. 发展"], "answer": ["D"]}, {"id": 393, "type": "single", "question": "中国近代社会的主要矛盾决定了，为了使中国在世界上站起来，为了使中国人民 过上幸福、富裕的生活，就必须推翻帝国主义、封建主义联合统治的半殖民地半封建的社会 制度，争得()：就必须改变中国经济技术落后的面貌，实现()。这是近代以来中华民族面临 的两大历史任务。", "options": ["A. 民族独立和人民解放:国家的富强和人民的富裕", "B. 自由民主，平等独立", "C. 民族独立，人民解放", "D. 国家富强，人民富裕"], "answer": ["A"]}, {"id": 394, "type": "single", "question": "19世纪60年代到90年代，洋务派兴办洋务事业的指导思想是： ()", "options": ["A. 师夷长技以制夷", "B. 中学为体，西学为用", "C. 物竞天择，适者生存", "D. 变法维新，救亡图存"], "answer": ["B"]}, {"id": 395, "type": "single", "question": "结束王明的\"左\"倾冒险主义在党中央的统治，确立了毛泽东的领导地位的重要会 议是：（}", "options": ["A. 八七会议", "B. 遵义会议", "C. 瓦密堡会议", "D. 中共七大"], "answer": ["B"]}, {"id": 396, "type": "single", "question": "下列关于改革、发展、稳定的关系正确的是： ()", "options": ["A. 改革是前提、稳定是动力、发展是目标，三者相互促进", "B. 发展是前提、改革是动力、稳定是目标，三者相互促进", "C. 稳定是前提、改革是动力、发展是目标，三者相互促进", "D. 没有关系"], "answer": ["C"]}, {"id": 397, "type": "single", "question": "在下列不平等条件中，含有强迫清政府把香港割让给英国这一内容的是： ()", "options": ["A. 《北京条约》", "B. 《南京条约》", "C. 《黄埔条约》", "D. 《望厦条约》"], "answer": ["B"]}, {"id": 398, "type": "single", "question": "标志着以慈禧太后为首的清政府彻底放弃抵抗外国侵略者的事件是 O NJF", "options": ["A. 《南京条约》的签订", "B. 《天津条约》的签订", "C. 《北京条约》的签订", "D. 《辛丑条约》的签订"], "answer": ["D"]}, {"id": 399, "type": "single", "question": "如果把过渡时期的总路线比作一只鸟，它的主体是（)", "options": ["A. 发展社会主义工业", "B. 发展农业", "C. 发展社会主义工商业", "D. 发展资本主义"], "answer": ["A"]}, {"id": 400, "type": "single", "question": "太平天国农民战争爆发的标志是：（)", "options": ["A. 金田起义", "B. 永安建制", "C. 长沙战役", "D. 南京定都"], "answer": ["A"]}, {"id": 401, "type": "single", "question": "《双一协定》的签订，中共取得的战略优势是：（）", "options": ["A. 获得了自卫战争的准备时间", "B. 解放区获得了合法地位", "C. 赢得了民主党派的支持", "D. 取得了政治上的主动地位"], "answer": ["D"]}, {"id": 402, "type": "single", "question": "民主和科学是前期新文化运动的一面大旗，受此影响最大的是： ()", "options": ["A. 广大青年", "B. 无产阶级", "C. 小资产阶级", "D. 工农群众"], "answer": ["A"]}, {"id": 403, "type": "single", "question": "新中国成立之初，中共和中国人民面临的严峻考验从根本上说是； (0", "options": ["A. 解放区的土改是否完成", "B. 帝国主义的威胁是否解除", "C. 新的解放区剿匪能否胜利", "D. 人民民主专政能否巩固"], "answer": ["D"]}, {"id": 404, "type": "single", "question": "在马美条约中最有利于列强对华经济扩张的条款是： ()", "options": ["A. 开辟新的内河航线", "B. 在苏杭富庶地区开放新的通商口岸", "C. 允许日本在通商口岸开设工厂", "D. 给于日本巨额赔款"], "answer": ["C"]}, {"id": 405, "type": "single", "question": "德国元帅瓦德西说：“无论欧、美、日本各国，皆无此脑力与兵力，可以统治此 天下生灵四分之一，故瓜分一事，实为下策。\"这表明： 0", "options": ["A. 帝国主义放弃灭亡中国的图谋", "B. 帝国主义之间相互勾结", "C. 帝国主义之间的矛盾", "D. 帝国主义瓜分中国图谋的破产"], "answer": ["D"]}, {"id": 406, "type": "single", "question": "在中国历史上，第一个规定\"中华民国之主权属于全体国民\"，而以\"参议院、临时 大总统、国务员、法院行使其统治权\"的文件是：（）", "options": ["A. 《中华民国临时约法》", "B. 《钦定宪法大纲》", "C. 《中华民国约法》", "D. 《中国民国宪法》"], "answer": ["A"]}, {"id": 407, "type": "single", "question": "下列对旧三民主义的评述，错误的是： ()", "options": ["A. 其核心是民权主义", "B. 是比较完整的资产阶级民主革命纲领", "C. 反映了中国人民要求民族独立的愿望", "D. 没有土地纲领"], "answer": ["D"]}, {"id": 408, "type": "single", "question": "新文化运动把矛头指向儒家传统道德，其根本原因是： ()", "options": ["A. 儒家思想阻碍了中国资本主义的发展", "B. 儒家思想是维护封建统治的理论基础", "C. 北洋军阀政府推崇儒家思想", "D. 懦家思想落后于资产阶级文化,全是糟粕"], "answer": ["B"]}, {"id": 409, "type": "single", "question": "1956年，中共中央召开关于知识分子问题会议，动员全党和全国人民特别是知 识分子：（）", "options": ["A. 向现代科学进军", "B. 向现代农业进军", "C. 向现代工业进军", "D. 向四个现代化进军"], "answer": ["A"]}, {"id": 410, "type": "single", "question": "瓦德西说\"无论欧美日本各国，皆无此脑力与兵力可以与兵力可以统治此天下生 灵四分之一\"，“故瓜分一事，实为下策\"，这表明列强。①瓜分中国计划破产②已放弃灭亡 中国的企图3仍需要扶持清政府以华制华④看到了中国人民的不屈斗争：（）", "options": ["A. O4", "B. 123", "C. 134", "D. 1234"], "answer": ["C"]}, {"id": 411, "type": "single", "question": "清政府的海军主力是哪一支舰队：（) S 公", "options": ["A. 福建水师", "B. 广东水师", "C. 北洋水师", "D. 南洋水师"], "answer": ["C"]}, {"id": 412, "type": "single", "question": "变法维新运动产生的社会条件是：（)", "options": ["A. 地主、官僚办洋务，中国近代军用、民用工业的产生", "B. 中国半殖民地半封建社会的形成", "C. 中国民族资本主义有了初步发展", "D. 自给自足自然经济的解体"], "answer": ["C"]}, {"id": 413, "type": "single", "question": "使孙中山对军阀势力有了比较深刻的认识并得出\"南与北如一丘之貉\"的结论是在： (）事件之后", "options": ["A. 二次革命", "B. 护国战争", "C. 反张勋复辟", "D. 护法运动"], "answer": ["D"]}, {"id": 414, "type": "single", "question": "中国近代第一次思想解放潮流的是： ()", "options": ["A. 洋务派与顽固派的论战", "B. 维新派与顽固派的论战", "C. 革命派与保皇派的论战", "D. \"问题\"与\"主义\"的论战"], "answer": ["B"]}, {"id": 415, "type": "single", "question": "1839年组织编写成《四洲志》，向中国人介绍西方情况的是： 0", "options": ["A. 林则徐", "B. 魏源", "C. 马建忠", "D. 郑观应"], "answer": ["A"]}, {"id": 416, "type": "single", "question": "被称为中国近代史上第一次巨变的是： () V", "options": ["A. 1840年鸦片战争爆发", "B. 洋务运动开始了中国的近代化", "C. 辛亥革命的胜利和中华民国的成立", "D. 五四运动的发生和新民主主义革命开始"], "answer": ["C"]}, {"id": 417, "type": "single", "question": "1980年8月，邓小平在中共中央政治局扩大会议上发表（），提出了政治体制 改革的基本任务。", "options": ["A. 《党和国家领导制度的改革》", "B. 《政治体制改革总体设想》", "C. 《关于进一步治理整顿和深化改革的决定》", "D. 《关于社会主义精神文明建设指导方针的决议》"], "answer": ["A"]}, {"id": 418, "type": "single", "question": "洋务运动前期李鸿章创办的近代军事工业是： ()", "options": ["A. 安庆军械所", "B. 江南制造总局", "C. 福州船政局", "D. 天津机器制造局"], "answer": ["B"]}, {"id": 419, "type": "multi", "question": "北伐战争期间农民运动发展最猛烈的省份有： ()", "options": ["A. 广东省", "B. 湖南省", "C. 江西省", "D. 湖北省", "E. 安徽省"], "answer": ["B", "D"]}, {"id": 420, "type": "multi", "question": "中国产生了共产党，这是开天辟地的大事变。中国发生了几个深刻改变： () 新。", "options": ["A. 深刻改变了近代以后中华民族发展的方向。", "B. 深刻改变了中国人民和中华民族的前途和命运。", "C. 深刻改变了世界发展的趋势和格局。", "D. 中国人民有了前进的主心骨，中国人民在精神上由被动变为主动，中国革命的面貌焕然"], "answer": ["A", "B", "C", "D"]}, {"id": 421, "type": "multi", "question": "1953年，中共中央过渡时期总路线的内容是（）", "options": ["A. 社会主义工业化", "B. 土地改革运动", "C. 社会主义改造", "D. 合理调整资本主义工商业", "E. 综合平稳的建设方针"], "answer": ["A", "C"]}, {"id": 422, "type": "multi", "question": "下列关于辛亥革命结果的表述》正确的是： ()", "options": ["A. 推翻了统治中国 260多年的清王朝", "B. 推翻了中国两千多年的封建制度", "C. 给封建君主专制制度以致命的一击", "D. 使人民获得一些民主和自由的权利"], "answer": ["A", "C", "D"]}, {"id": 423, "type": "multi", "question": "习近平新时代中国特色社会主义思想的核心内容是（）新教材P.333", "options": ["A. 八个明确", "B. 中国共产党的领导", "C. 十四个坚持", "D. 社会主义道路"], "answer": ["A", "C"]}, {"id": 424, "type": "multi", "question": "标志着中国社会主义建设在探索中出现良好开局的重要事件有（）", "options": ["A. 1956年毛泽东所作的《论十大关系》报告", "B. 1956年中共八大的召开", "C. 1957 年毛泽东发表《关于正确处理人民内部矛盾的问题》的讲话", "D. 1957 年的反右派斗争", "E. 1958年社会主义建设总路线的提出"], "answer": ["A", "B", "C"]}, {"id": 425, "type": "multi", "question": "以下哪些举措为社会主义改造创造条件（)", "options": ["A. 没收官僚资本确立国营经济的领导地位", "B. 开始将资本主义纳入国家资本主义轨道", "C. 引导个体农民在土地改革后逐步走上互助合作的道路", "D. 重视对知识分子的团结教育和改造"], "answer": ["A", "B", "C"]}, {"id": 426, "type": "multi", "question": "太平天国农民革命派探索国家出路的纲领性文献有（)", "options": ["A. 《天朝田亩制度》", "B. 《太平礼制》", "C. 《天下一家，共享太平》", "D. 《资政新篇》", "E. 《原道救世歌》"], "answer": ["A", "D"]}, {"id": 427, "type": "multi", "question": "1935年1月，遵义会议解决了当时最迫切的（） 人", "options": ["A. 思想问题", "B. 军事问题", "C. 组织问题", "D. 政治问题", "E. 政权问题"], "answer": ["B", "C"]}, {"id": 428, "type": "multi", "question": "1939年、1940年之交，毛泽东系统的阐明新民主主义的理论的主要文章是（）", "options": ["A. 《《共产党人》发刊词》", "B. 《中国革命和中国共产党》", "C. 《新民主主义论》", "D. 《在晋绥干部会议上的讲话》", "E. 《论人民民主专政》"], "answer": ["A", "B", "C"]}, {"id": 429, "type": "multi", "question": "解放初期，我国社会主义国营企业资产的来源有（）", "options": ["A. 国民政府财产", "B. 官惊资本", "C. 帝国主义在华企业", "D. 资本主义工商业", "E. 私人资本主义经济"], "answer": ["A", "B", "C"]}, {"id": 430, "type": "multi", "question": "土地革命战争时期，中国红色政权能够存在和发展的主观条件有（）", "options": ["A. 政治经济发展的不平衡", "B. 相当力量的红军存在", "C. 共产党组织的坚强有力和政策的正确", "D. 第一次国内革命战争的影响", "E. 全国革命形势的继续发展"], "answer": ["B", "C"]}, {"id": 431, "type": "multi", "question": "20 世纪初成立的资产阶级革命团体有心", "options": ["A. 华兴会", "B. 光复会", "C. 科学补习所", "D. 岳王会"], "answer": ["A", "B", "C", "D"]}, {"id": 432, "type": "multi", "question": "毛泽东第一次从理论上系统分析和论证了中国红色政权的发生、发展的原因和条 件的著作有（）", "options": ["A. 《中国的红色政权为什么能够存在？》", "B. 《井冈山的斗争》", "C. 《星星之火，可以燎原》", "D. 《反对本本主义》", "E. 《战争和战略问题》"], "answer": ["A", "B", "C", "D"]}, {"id": 433, "type": "multi", "question": "随着近代中国从封建社会逐步演变为半殖民地半封建社会，中国社会的阶级关系 也发生了深刻的变动，不仅旧的阶级发生了变化，还有新的阶级产生。以下对当时阶级关系 的描述正确的是（) 地后流入城市，成为产业工人的后备军。", "options": ["A. 日的地主阶级仍占有大量土地。", "B. 出现了城居地主，一部分地主投资于资本主义工商业", "C. 农民仍是占人数最多的被统治阶级。", "D. 由于土地兼并的加剧，不少自耕农失去土地，向贫农或雇农转化。有些农民破产或失去土", "E. 近代中国诞生的新兴的被压迫阶级是工人阶级。"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 434, "type": "multi", "question": "从19 世纪·60年代到90年代，洋务派举办的洋务事业归纳起来有： ()", "options": ["A. 兴办近代军用工业", "B. 兴办近代民用工业", "C. 建立新式海陆军", "D. 创办新式学堂，派遣留学生"], "answer": ["A", "B", "C", "D"]}, {"id": 435, "type": "multi", "question": "在近代中国，民族资本主义经济的发展受到多方面的阻碍，主要有： ()", "options": ["A. 外国资本的压迫", "B. 官惊资本的排挤", "C. 封建生产关系的束缚", "D. 军阀官僚政府的压榨"], "answer": ["A", "B", "C", "D"]}, {"id": 436, "type": "multi", "question": "\"工农武装割据\"思想包含的三个主要因索是（）", "options": ["A. 武装斗争", "B. 土地革命", "C. 农村革命根据地", "D. 统一战线", "E. 党的建设"], "answer": ["A", "B", "C"]}, {"id": 437, "type": "multi", "question": "20世纪50 年代末的\"大跃进\"和人民公社化运动中提出的“三面红旗\"是指（） D\"平二调\"", "options": ["A. 总路线", "B. \"一大二公”", "C. \"大跃进\"", "E. 人民公社"], "answer": ["A", "C", "E"]}, {"id": 438, "type": "multi", "question": "辛亥革命失败的重要原因有： ()", "options": ["A. 帝国主义的干涉", "B. 革命党人没有明确的反对帝国主义的纲领", "C. 袁世凯阴谋篡权", "D. 革命党人没有广泛地发动农民群众参加斗争"], "answer": ["A", "B", "C", "D"]}, {"id": 439, "type": "multi", "question": "新中国最大的历史成就，就是（）了中国特色社会主义。", "options": ["A. 开创", "B. 探索", "C. 发展", "D. 坚持", "E. 重构"], "answer": ["A", "B", "C", "D"]}, {"id": 440, "type": "multi", "question": "“五反\"运动的基本内容是什么？ () E反盗窃国家经济情报", "options": ["A. 反行贿", "B. 反偷税漏税", "C. 反盗窃国家资财", "D. 反偷工减料"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 441, "type": "multi", "question": "辛亥革命对戊戌变法的继承和发展主要表现在：（)", "options": ["A. 资产阶级革命思想的传播", "B. 挽救民族危亡，发展资本主义的主张", "C. 采取社会改良的办法达到目的", "D. 实行资本主义的政治制度"], "answer": ["B", "D"]}, {"id": 442, "type": "multi", "question": "中国的抗日战争是世界反法西斯战争的重要组成部分，其表现是（）", "options": ["A. 中国战场年平均牵制日本的陆军的74%以上", "B. 日军在海外作战中损失的287万人中，有150万人伤亡在中国战场", "C. 中国为盟国提供了大量的战略物资和军事情报", "D. 苏联出兵击败日本关东军", "E. 美英法等国向中国提供了经济援助或军事合作"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 443, "type": "multi", "question": "1947年土地改革政策的内容包括（) E发展农业生产", "options": ["A. 实行减租减息", "B. 没收地主土地，废除封建剥削的土地制度", "C. 实行耕者有其田的土地制度", "D. 把土地分配给农民"], "answer": ["B", "C", "D"]}, {"id": 444, "type": "multi", "question": "抗日战争时期，国民党顽固派发动军事进攻，中共中央提出了三大口号，其内容 是（）", "options": ["A. 坚持斗争，反对妥协", "B. 坚持抗战，反对投降", "C. 坚持团结，反对分裂", "D. 坚持进步，反对倒退", "E. 坚持向前，反对退步"], "answer": ["B", "C", "D"]}, {"id": 445, "type": "multi", "question": "中共中央在 1953年通过的《关于发展农业生产合作社的决议》中，提出了几种 过渡型的经济组织形式包括： 0", "options": ["A. 互助组", "B. 初级农业生产合作社", "C. 人民公社", "D. 高级农业生产合作社", "E. 农业生产小组"], "answer": ["A", "B", "D"]}, {"id": 446, "type": "multi", "question": "五四运动爆发的历史背景包括（)", "options": ["A. 北洋军阀的黑暗统治", "B. 工人阶级队伍迅速壮大", "C. 新文化运动的开展", "D. 中国人民反帝情绪高涨", "E. 俄国十月革命的影响"], "answer": ["A", "B", "C", "E"]}, {"id": 447, "type": "multi", "question": "\"一五\"期间，我国钢铁基地建设取得重大进展的是（）", "options": ["A. 鞍山", "B. 包头", "C. 武汉", "D. 长春", "E. 沈阳"], "answer": ["A", "B", "C"]}, {"id": 448, "type": "multi", "question": "长征胜利的意义是（）", "options": ["A. 宣告了国民党反动派消灭中国共产党和红军的图谋彻底破灭", "B. 宣告了中国共产党和红军肩负着民族希望实现了北上抗日的战略转移", "C. 实现了中国共产党和中国革命事业从挫折走向胜利的伟大转折", "D. 形成了\"长征精神\"不断激励着中国共产党艰苦奋斗"], "answer": ["A", "B", "C", "D"]}, {"id": 449, "type": "multi", "question": "在1919年上半年召开的巴黎\"和平会议\"上，中国政府代表团提出以下要求：（）， 但遭到拒绝。 信刷题小程序： 拒签和约", "options": ["A. 废除外国在华势力范围、撤退外国在华驻军等七项希望", "B. 取消日本强加的“二十一条\"及换文", "C. 归还八国联军侵入北京时被掠走的天文仪器", "D. 拒签和约"], "answer": ["A", "B", "C"]}, {"id": 450, "type": "multi", "question": "太平天国运动由盛转衰的转折点是（)", "options": ["A. 北伐失败", "B. 天京变乱", "C. 安庆先守", "D. 石达开出走", "E. 天京失陷"], "answer": ["B", "D"]}, {"id": 451, "type": "multi", "question": "中国特色的社会主义改造的主要经验有)", "options": ["A. 坚持中国共产党的领导", "B. 对所有制和改造和对人的改造相结合", "C. 由低级到高级逐步过渡的形式", "D. 采取和平的方式"], "answer": ["A", "C", "D"]}, {"id": 452, "type": "multi", "question": "在新民主主义革命时期，压在中国人民身上的“三座大山\"是指： ) FU马院", "options": ["A. 外国帝国主义", "B. 本国封建主义", "C. 本国资本主义", "D. 官僚资本主义"], "answer": ["A", "B", "D"]}, {"id": 453, "type": "multi", "question": "1949年中华人民共和国成立以来的现代史，可分为三个阶段：", "options": ["A. 社会主义革命和建设时期", "B. 社会主义革命时期", "C. 改革开放和社会主义现代化建设新时期", "D. 社会主义建设时期", "E. 中国特色社会主义进入新时代"], "answer": ["A", "C", "E"]}, {"id": 454, "type": "multi", "question": "五四运动是中国新民主主义革命的开端，主要是因为（)", "options": ["A. 中国社会性质和革命任务发生了根本性变化", "B. 革命领导力量和指导思想发生了巨大变化", "C. 无产阶级开始以独立的姿态登上了政治舞台", "D. 具有以往的历次革命运动所不具备的广泛性和不妥协性", "E. 开始了马克思主义与工人运动相结合的过程"], "answer": ["B", "C", "D", "E"]}, {"id": 455, "type": "multi", "question": "十八大阐明中国特色社会主义的总依据是（），总布局是（），总任务是（） C", "options": ["A. 五位一体", "B. 四个全面", "C. 社会主义初级阶段", "D. 实现社会主义现代化和中华民族伟大复兴"], "answer": ["A", "C", "D"]}, {"id": 456, "type": "multi", "question": "如何推进党的全面领导和提高党的建设质量（）新教材p.341", "options": ["A. 坚持党对一切工作的指导", "B. 坚决维护党中央权威和集中统一领导", "C. 把党的政治建设放在首位", "D. 深入推进党的自我革命"], "answer": ["A", "B", "C", "D"]}, {"id": 457, "type": "multi", "question": "日本对中国的大规模侵略和在中国部分地区的殖民统治，犯下了空前严重的罪行， 其主要表现是（) 贴 E强制推行奴化教育", "options": ["A. 制造惨绝人寰的大居杀", "B. 实行“三光\"政策", "C. 控制铁路交通", "D. 肆意掠夺矿产资源、土地及农产品"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 458, "type": "multi", "question": "1936年 10月，中国工农红军第一、二、四方面军胜利的地点在： (0", "options": ["A. 陕北洛川地区", "B. 陕北瓦窑堡地区", "C. 甘肃静宁地区", "D. 甘肃会宁地区"], "answer": ["C", "D"]}, {"id": 459, "type": "multi", "question": "瓦德西说：“无论欧美日本各国，皆无此脑力与兵力可以统治此天下生灵四分之 \"，“故瓜分一事，实为下策。\"这表明列强： 2 小程序", "options": ["A. 瓜分中国的计划破产", "B. 放弃灭亡中国的企图", "C. 仍需扶植清政府以华治华", "D. 看到中国人民的不屈斗志"], "answer": ["A", "C", "D"]}, {"id": 460, "type": "multi", "question": "在探索中国工业化道路的过程中，毛泽东阐述的重工业、轻工业和农业关系的观 点主要有（) E以农业为基础，以工业为主导", "options": ["A. 通过多发展一些重工业来促进农业和轻工业的发展", "B. 通过多发展一些农业和轻工业来促进重工业的发展", "C. 以农业、轻工业、重工业的次序安排国民经济计划", "D. 在优先发展重工业的条件下，发展农业和发展工业同时并举"], "answer": ["B", "C", "D", "E"]}, {"id": 461, "type": "multi", "question": "从下列各组中选出\"戊戌六君子\"：（）", "options": ["A. 谭嗣同、杨锐、林旭", "B. 杨深秀、刘光第、康广仁", "C. 康有为、谭嗣同、林旭", "D. 梁启超、谭嗣同、杨锐", "E. 康有为、梁启超、谭嗣同"], "answer": ["A", "B"]}, {"id": 462, "type": "multi", "question": "抗战胜利初期，中国共产党的主要政治任务是（）", "options": ["A. 参加重庆谈判，商讨建国大计", "B. 争取和平民主", "C. 召开政协会议", "D. 改组国民政府", "E. 反对内战独裁"], "answer": ["B", "E"]}, {"id": 463, "type": "multi", "question": "19世纪70年代以后，（）、（）、（）、（）等人不仅主张学习西方的科学技 术，同时也要求吸纳西方的政治、经济学说。他们的共同特点，就是具有比较强烈的反对外 国侵略、追求中国独立富强的爱国思想，以及具有一定程度反对封建专制的民主思想。", "options": ["A. 薛福成", "B. .马建忠", "C. 郑观应", "D. 张之洞"], "answer": ["A", "B", "C", "D"]}, {"id": 464, "type": "multi", "question": "五四运动前后的新文化运动的不同之处有（）", "options": ["A. 宣传社会主义思想", "B. 马克思主义宣传与工人运动相结合", "C. 对科学共产主义作了较为全面系统地介绍", "D. 动摇了封建正统思想", "E. 进步刊物和进步团体出现"], "answer": ["B", "C"]}, {"id": 465, "type": "multi", "question": "中英《南京条约》规定中国开放的通商口岸是：（) 刷题", "options": ["A. 广州", "B. 夏门", "C. 福州", "D. 宁波", "E. 上海"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 466, "type": "multi", "question": "中共建国以来总共在三次党的全国代表大会上，对我国社会主要矛盾进行了重新 认定。这三次会议及举行的年代是（）", "options": ["A. 1987年十三大", "B. 1969年九大", "C. 1956 年八大", "D. 2017年十九大"], "answer": ["A", "C", "D"]}, {"id": 467, "type": "multi", "question": "在新民主主义革命时期，有三种建国方案可由中国人民在政治实践中选择，但从 根本上说可供中国人民选择的方案主要是： ()", "options": ["A. 在中国建立资产阶级共和国", "B. 继续维持半殖民地半封建的旧中国", "C. 创建新民主主义的新中国", "D. 在中国建立社会主义国家"], "answer": ["B", "C"]}, {"id": 468, "type": "multi", "question": "关于1949年国共北平和谈各方目的叙述正确的是（)", "options": ["A. 蒋介石以和谈作缓兵之计", "B. 李宗仁企图与共产党划长江而治", "C. 蒋介石为了退居幕后指挥", "D. 中共为了迅速结束战争，实现国内和亚", "E. 国民党为了结束战争，恢复和亚"], "answer": ["A", "B", "D"]}, {"id": 469, "type": "multi", "question": "关于中共二大的描述，正确的是：", "options": ["A. 第一次提出了反帝反封建的民主革命纲领", "B. 第一次提出党的最高纲领是实现社会主义、共产主义。", "C. 开始采取群众路线的方法", "D. 与国民党实行\"党外合作”"], "answer": ["A", "C"]}, {"id": 470, "type": "multi", "question": "1929年12月下旬，在福建上杭县古田村召开了红四军第九次党代表会议，也叫 古田会议。会议规定1929年12月下旬，在福建上杭县古田村召开了红四军第九次党代表 会议，也叫古田会议。会议规定", "options": ["A. 红军是一个执行革命任务的武装集团必须绝对服从共产党的领导。", "B. 红军必须担负打仗、筹款和做群众工作的任务", "C. 必须加强政治工作"], "answer": ["A", "B", "C"]}, {"id": 471, "type": "multi", "question": "1928年至1930年间，毛泽东关于中国革命道路理论的重要著作有： ()", "options": ["A. 《中国的红色政权为什么能够存在》", "B. 《井冈山的斗争》", "C. 《星星之火，可以燎原》", "D. 《战争和战略问题》"], "answer": ["A", "B", "C"]}, {"id": 472, "type": "multi", "question": "太平天国运动和义和团运动对中国社会发展所起的积极作用是（） E沉重地打击了封建统治者", "options": ["A. 直接推动了中国近代化的进程", "B. 客观上促进了清政府的变化和改革", "C. 有利于中国民族资本主义的发展", "D. 打击了西方殖民势力"], "answer": ["B", "D", "E"]}, {"id": 473, "type": "multi", "question": "邓小平1992年初在南方谈话中指出：“改革开放迈不开步子，不敢闯，说来说去 就是怕资本主义的东西多了，走了资本主义道路。要害是姓资'还是姓'社'的问题。判断的标 准，应该主要看是否有利于（），是否有利于（），是否有利于（ C", "options": ["A. 发展社会主义社会的生产力", "B. 发展社会文化", "C. 增强社会主义国家的综合国力", "D. 提高人民的生活水亚"], "answer": ["A", "C", "D"]}, {"id": 474, "type": "multi", "question": "中共一大的内容包括（0", "options": ["A. 制定了党的第一个纲领", "B. 决定加入共产国际", "C. 确定了党的中心任务", "D. 选举了党的中央领导机构", "E. 确定了国共合作的方针"], "answer": ["A", "C", "D"]}, {"id": 475, "type": "multi", "question": "辛孩革命前，中国留学生陈天华在东京为揭露帝国主义侵略、控诉清政府卖国罪 行奋笔撰写的白话文著作是： ()", "options": ["A. 《革命军》", "B. 《猛回头》", "C. 《敬告同乡书》", "D. 《警世钟》"], "answer": ["B", "D"]}, {"id": 476, "type": "multi", "question": "关于中共诞生的条件表述正确的是（) E共产国际的指导和帮助", "options": ["A. 马克思主义的传播提供了思想基础", "B. 各地共产党早期组织建立提供了组织基础", "C. 工人阶级壮大提供了阶级基础", "D. 第一次工人运动高潮提供了群众基础"], "answer": ["A", "B", "C", "E"]}, {"id": 477, "type": "multi", "question": "中共七大把党长期奋斗中形成的优良作风概括为三大作风（)", "options": ["A. 艰苦奋斗的作风", "B. 理论和实践相结合的作风", "C. 和人民群众紧密联系在一起的作风", "D. 自我批评的作风"], "answer": ["B", "C", "D"]}, {"id": 478, "type": "multi", "question": "19 世纪下半叶，沙俄侵占我国东北部领土，强迫清政府签订的不平等条约有：（)", "options": ["A. 《中俄瑷珲条约》", "B. 《中俄天津条约》", "C. 《中俄勘分西北界约记发", "D. 《中俄北京条约》", "E. 《中俄伊犁条约》"], "answer": ["A", "D"]}, {"id": 479, "type": "multi", "question": "毛泽东在总结中国革命的成功验时指出：中国革命的基本武器是（）", "options": ["A. :党的领导", "B. 统一战线", "C. 武装斗争", "D. 根据地建设", "E. 土地革命"], "answer": ["B", "C"]}, {"id": 480, "type": "multi", "question": "农村包围城市、武装夺取政权道路的两个基本特点是 0", "options": ["A. 实行人民战争", "B. 主要斗争形势是长期的革命战争", "C. 进攻的主要方向是先去农村，后占城市", "D. 在战略上藐视敌人，战术上重视敌人", "E. 无产阶级同资产阶级建立统一战线"], "answer": ["B", "C"]}, {"id": 481, "type": "multi", "question": "中国共产党派代表参加重庆谈判的主要目的是 () 〈程序", "options": ["A. 尽力争取国内和平", "B. 揭露美蒋假和平的阴谋", "C. 准备反击蒋介石的反共进攻", "D. 团结和教育广大人民", "E. 迫于国内外反对内战的舆论压力"], "answer": ["A", "B", "C", "D"]}, {"id": 482, "type": "multi", "question": "新文化运动兴起的社会背景是 0", "options": ["A. 字亥革命没有彻底批判封建思想", "B. 北洋军阀用封建思想来禁锢人们的头脑", "C. 资产阶级要求实行民主政治", "D. 中国资本主义进、步发展", "E. 能够正确看待东西方文化"], "answer": ["A", "B", "C", "D"]}, {"id": 483, "type": "multi", "question": "\"大跃进\"和人民公社化运动期间，\"左\"倾错误的主要标志有：（） E\"共产风", "options": ["A. 瞎指挥", "B. 浮夸风", "C. 高指标", "D. 勤俭风"], "answer": ["A", "B", "C", "E"]}, {"id": 484, "type": "multi", "question": "下面描述正确的是： 英勇奋斗、艰辛探索并不断取得伟大成就的历史。 赢得民族独立、人民解放，建立中华人民共和国的历史。 充满生机活力的社会主义中国的历史。", "options": ["A. 中国近现代史，就其主流和本质来说，是中国人民为救亡图存和实现中华民族伟大复兴而", "B. 尤其是全国各族人民在中国共产党领导下，进行艰苦卓绝的斗争，经过新民主主义革命，", "C. 经过社会主义革命、建设、改革，把极度贫穷落后的中国逐步改变成持续走向繁荣富强、", "D. 中国近现代史的发展和世界近现代史的发展是完全同步的。"], "answer": ["A", "B", "C"]}, {"id": 485, "type": "multi", "question": "中国民族资产阶级是一个带两重性的阶级，这两重性是指： O", "options": ["A. 革命性", "B. 软弱性", "C. 动摇性", "D. 不彻底性"], "answer": ["A", "B"]}, {"id": 486, "type": "multi", "question": "以下关于中央红军长征的表述，正确的有 0", "options": ["A. 红军被迫实施的一次战略转移", "B. 突破四道封锁线后人员损失过半", "C. 在陕北吴起镇同红十五军团会师", "D. 历时1年，穿越11个省", "E. 同红四方面军会师后一起穿过草地"], "answer": ["A", "B", "C"]}, {"id": 487, "type": "multi", "question": "新文化运动是资产阶级哪些要求在文化上的反映（） 食", "options": ["A. 防止封建帝制复辟", "B. 反对封建军阀统治", "C. 宣传马克思主义", "D. 实行资产阶级民主政治", "E. 学习西方文化"], "answer": ["B", "D"]}, {"id": 488, "type": "multi", "question": "1956 年4月28日，毛泽东主席提出繁荣科学文化的\"双百\"方针，以下叙述正确 的是（)", "options": ["A. 向外国学习,但不能一切照搬", "B. 后来成为正确处理人民内部矛盾的正确方针", "C. 艺术问题上的百花齐放", "D. 学术问题上的百家争鸣", "E. 打倒一切"], "answer": ["B", "C", "D"]}, {"id": 489, "type": "multi", "question": "变法维新运动的中心目标是： 0 E推翻清王朝，建立资本主义制度", "options": ["A. 反对帝国主义侵略，维护民族独立", "B. 挽救民族危亡", "C. 发展民族资本主义", "D. 继续开展洋务运动"], "answer": ["B", "C"]}, {"id": 490, "type": "multi", "question": "资本-帝国主义列强在政治上为了统治中国采取的主要方式（)", "options": ["A. 控制中国的内政外交", "B. 镇压中国人民的反抗", "C. 扶植收买代理人", "D. 披着宗教外衣进行侵略活动"], "answer": ["A", "B", "C"]}, {"id": 491, "type": "multi", "question": "正确认识和把握改革开放前后社会主义实践探索的关系，不只是一个历史问题， 更主要的是一个现实的政治问题。（） 中的先误和挫折，把中国共产党妖魔化，进而从根本上否定中国共产党的执政地位。 的困难、矛盾和问题，把中国特色社会主义妖魔化，进而动摇中国人民团结奋斗的共同思想 基础。 两个时期或者其中的任何一个时期，必然导致对中国共产党的领导和社会主义制度的否定， 也必然导致对改革开放和中国特色社会主义的否定。 政治问题。我们一定要有这样的政治上的清醒。", "options": ["A. 否定改革开放前的历史时期，就是要否定我们党的重大历史贡献，放大我们党在实践探索", "B. 否定改革开放后的历史时期，就是要否定改革开放的社会主义性质，夸大改革开放中出现", "C. 这个重大政治问题处理不好，就会产生严重政治后果。如果用不正确的观点简单地否定这", "D. 正确认识和把握改革开放前后两个历史时期，是一个事关党、国家、人民前途命运的重大"], "answer": ["A", "B", "C", "D"]}, {"id": 492, "type": "multi", "question": "1942-1945 年延安整风运动的结果是（）", "options": ["A. 整顿了党风", "B. 整顿了学风和文风", "C. 对全党进行了普遍的马克思主义教育", "D. 确立了实事求是的路线"], "answer": ["A", "B", "C", "D"]}, {"id": 493, "type": "multi", "question": "下列关于五四运动的评述正确的是（）", "options": ["A. 促使北洋政府拒签和约", "B. 反帝反封建的爱国运动", "C. 追求民主科学的思想解放运动", "D. 新民主主义革命的开端"], "answer": ["A", "B", "C", "D"]}, {"id": 494, "type": "multi", "question": "1927年8月1日南昌起义的主要领导人有： ()", "options": ["A. 周恩来", "B. 贺龙", "C. 叶挺", "D. 朱德", "E. 刘伯承"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 495, "type": "multi", "question": "中国社会存在的两对主要矛盾是（）", "options": ["A. 清朝政府与官僚地主阶级", "B. 封建主义与大众人民", "C. 满族与汉族", "D. 中华民族与帝国主义"], "answer": ["B", "D"]}, {"id": 496, "type": "multi", "question": "中国古代曾有的盛世：（）", "options": ["A. 汉代的\"文景之治”", "B. 唐代的“贞观之治”", "C. \"开元盛世”", "D. 清代的\"康乾盛世\"", "E. 同光（同治、光绪)中兴"], "answer": ["A", "B", "C", "D"]}, {"id": 497, "type": "multi", "question": "太平天国运动失败的主要原因（) 程序", "options": ["A. 太平天国领导集团不团结", "B. 小生产者的阶级局限性", "C. .中外反动势力的联合绞杀", "D. 没有科学理论作指导"], "answer": ["A", "B", "C", "D"]}, {"id": 498, "type": "multi", "question": "下列关于二次革命，护国运动和护法运动的表述，正确的是（）", "options": ["A. 都属孙中山直接领导的", "B. 都是为了维护辛亥革命成果", "C. 都反对北洋军阀的反动统治", "D. 最终都未取得成功"], "answer": ["B", "C", "D"]}, {"id": 499, "type": "multi", "question": "3.洋务运动期间兴办的新式学堂主要有（）三种", "options": ["A. 翻译学堂", "B. 工艺学堂", "C. 军事学堂", "D. 教会学堂"], "answer": ["A", "B", "C"]}, {"id": 500, "type": "multi", "question": "从下列各组中选出\"戊戌六君子”： 0", "options": ["A. 康有为、梁启超、谭嗣同", "B. 康广仁、杨深秀、刘光第、", "C. 康有为、谭嗣同、林旭", "D. 谭嗣同、杨锐、林旭"], "answer": ["B", "D"]}, {"id": 501, "type": "multi", "question": "中国资产阶级也是近代中国新产生的阶级，是在外国资本主义入侵的影响和刺激 下，主要由一些群体（）投资新式企业转化而成。从19 世纪70年代开始，中国民族资本 兴办的新式企业逐步发展起来。", "options": ["A. 买办", "B. 商人", "C. 地主", "D. 官僚"], "answer": ["A", "B", "C", "D"]}, {"id": 502, "type": "multi", "question": "在1949年新中国成立前，中国人民持续遭受\"三座大山\"的压迫，推三座大山” 就成为新民主主义革命的主要任务。", "options": ["A. 封建主义", "B. 殖民主义", "C. 官僚资本主义", "D. 帝国主义"], "answer": ["A", "C", "D"]}, {"id": 503, "type": "multi", "question": "我国对资本主义工商业的改造是通过国家资本主义的途径实现的。国家资本主义 的形式有（)", "options": ["A. 委托加工", "B. 计划订货", "C. 统购包销", "D. 经销代销", "E. 公私合营"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 504, "type": "multi", "question": "下列属于资产阶级革命派团体的是（) 言", "options": ["A. 兴中会", "B. 强学会", "C. 华兴会", "D. 光复会", "E. 日知会"], "answer": ["A", "C", "D", "E"]}, {"id": 505, "type": "multi", "question": "（）和（）为当代中国一切发展进步奠定了根本政治前提和制度基础。", "options": ["A. 社会主义计划经济", "B. 新民主主义革命的胜利", "C. 公私合营", "D. 社会主义基本制度的建立"], "answer": ["B", "D"]}, {"id": 506, "type": "multi", "question": "与以往的农民战争相比，太平天国运动新的特点表现在（）", "options": ["A. 运动规模空前巨大", "B. 反封建同时反侵略", "C. 《天朝田亩制度》的平均主义理想", "D. 《资政新篇》的资本主义色彩", "E. 彻底的反封建性"], "answer": ["B", "D"]}, {"id": 507, "type": "multi", "question": "下列新中国几个历史时期属于\"文革\"前的是： ()", "options": ["A. 改革开放新时期", "B. 基本完成社会主义改造", "C. 徘徊中前进时期", "D. \"文化大革命\"时期", "E. 全面建设社会主义时期"], "answer": ["B", "E"]}, {"id": 508, "type": "multi", "question": "九一八事变后，不断兴起的抗日救亡运动促使国民党内部分化，出现了一批坚决 抗日的爱国力量，有代表性的是（） B蔡廷锴、蒋光鼎率领的十九路军在上海奋起抗击日军", "options": ["A. 以东北军为主体，在东北兴起了抗日义勇军", "C. 1933年5月，冯玉祥在张家口成立察哈尔民众抗日同盟军", "D. 阎锡山领导的晋绥军"], "answer": ["A", "B", "C"]}, {"id": 509, "type": "multi", "question": "五四运动中爱国学生要求惩办的卖国贼是： ()", "options": ["A. 段祺瑞", "B. 章宗祥", "C. 曹汝霖", "D. 袁世凯", "E. 陆宗舆"], "answer": ["B", "C", "E"]}, {"id": 510, "type": "multi", "question": "全面内战爆发后，国统区的经济陷于空前严重的危机中。导致这种危机的原因是 (0", "options": ["A. 美国加紧经济侵略", "B. 国民政府的野蛮掠夺", "C. 大规模战争的巨大消耗", "D. 民族资本家将资金转移至境外", "E. 农业生产衰退，粮荒严重"], "answer": ["A", "B", "C"]}, {"id": 511, "type": "multi", "question": "帝国主义没能实现瓜分中国的原因（)", "options": ["A. 帝国主义列强之间的矛盾和相互制约", "B. 清朝政府的极力反抗", "C. 帝国主义的软弱", "D. 中华民族不屈不挠的斗争"], "answer": ["A", "D"]}, {"id": 512, "type": "multi", "question": "1956 年9月召开的党的八大提出在社会主义改造基本完成后，我国国内的主要 矛盾是（）", "options": ["A. 无产阶级和资产阶级的矛盾", "B. 人民内部矛盾", "C. 人民大众同地主阶级国民党残余势力的矛盾", "D. 人民对建立先进工业国的要求同落后的农业国的现实之间的矛盾", "E. 人民对于经济文化迅速发展的需要同当前经济文化不能满足人民需要的状况之间的矛盾"], "answer": ["D", "E"]}, {"id": 513, "type": "multi", "question": "国民党一大的主要内容及意义是（)", "options": ["A. 讨论了国民党改组的问题", "B. 重新解释了三民主义", "C. 确立了联俄联共扶助农工政策", "D. 民主革命统一战线建立", "E. 国民革命运动开始"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 514, "type": "multi", "question": "第一次国共合作后，北伐战争胜利进军的原因有（）", "options": ["A. 民主革命统一战线旗帜的指引", "B. 共产党员、共青团员在北伐军中的模范作用", "C. 全国工农群众的大力支持", "D. 制定了正确的北伐方针", "E. 苏联政府的军事指导和物资援助"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 515, "type": "multi", "question": "中国共产党与以往的任何政党不同的主要表现是（）", "options": ["A. 以马克思主义理论为指导", "B. 是新型的工人阶级政党", "C. 能够代表整个中华民族的利益", "D. 坚持用革命的手段来达到目的", "E. 以实现共产主义为目标"], "answer": ["A", "B", "C", "E"]}, {"id": 516, "type": "multi", "question": "2005年 10月，党的十六届五中全会通过《中共中央关于制定国民经济和社会发 展第十一个五年规划的建议》。2006年3月，十届全国人大四次会议审议通过《中华人民 共和国国民经济和社会发展第十一个五年规划纲要》。“十一五\"规划第一次将延续50 多年 的\"计划\"改为\"规划，这一字之差体现了（)", "options": ["A. 社会主义市场经济条件下中长期规划的功能定位", "B. 我国发展理念的重大变革", "C. 我国经济体制的重大变革", "D. 我国政府职能的重大变革"], "answer": ["A", "B", "C", "D"]}, {"id": 517, "type": "multi", "question": "用\"物竞天择\"适者生存\"的社会进化论思想，为当时社会的民族危机意识提出理 论根据的是哪位作者（）及其作品（) .", "options": ["A. 孙中山", "B. 严复", "C. 《天演论》", "D. 《建国方略》"], "answer": ["B", "C"]}, {"id": 518, "type": "multi", "question": "1928年至1930年间，中国共产党在农村建立的根据地主要有： ()", "options": ["A. 中央区", "B. 鄂豫皖区", "C. 湘鄂西区", "D. 左右江区", "E. 晋察冀区"], "answer": ["A", "B", "C", "D"]}, {"id": 519, "type": "multi", "question": "反侵略战争失败的主要原因是（)", "options": ["A. 中国当时的实力小", "B. 社会制度的腐败", "C. 帝国主义过于强大", "D. 经济技术落后"], "answer": ["B", "D"]}, {"id": 520, "type": "multi", "question": "蒋介石在积极准备内战的同时，也愿意与中共进行和平谈判，目的是（）", "options": ["A. 以此敷衍国内外舆论掩盖其内战准备", "B. 诱使中共交出人民军队和解放区政权", "C. 谈判不成即发动内战,转嫁战争责任", "D. 还需要时间做好作战准备"], "answer": ["A", "B", "C"]}, {"id": 521, "type": "multi", "question": "1946--1948年国统区纸币发行量呈几倍甚至几十倍的增长，这说明（)", "options": ["A. 国民政府财政金融体系出现严重危机", "B. 国统区经济飞速发展", "C. 广大人民生活在水深火热之中", "D. 必然导致工商企业的大量破产", "E. 国民政府对人民血腥掠夺和肆意搜刮"], "answer": ["A", "C", "D"]}, {"id": 522, "type": "multi", "question": "在1921年中国共产党成立到1949年新中国成立以前的时期，中国存在的三种主 要的政治力量是：（）", "options": ["A. 地主阶级和买办性的大资产阶级", "B. 民族资产阶级", "C. 城市小资产阶级和农村广大士绅", "D. 工人阶级、农民阶级和城市小资产阶级"], "answer": ["A", "B", "D"]}, {"id": 523, "type": "multi", "question": "鸦片战争对中国社会的影响表现（)", "options": ["A. 政治经济上", "B. 阶级关系上", "C. 思想文化", "D. 社会矛盾"], "answer": ["A", "B", "C", "D"]}, {"id": 524, "type": "multi", "question": "按照教材的分期，下面的描述有哪些是对的：", "options": ["A. 从1840年到1949年，是中国近代史", "B. 1949年以来的历史，是中国现代史", "C. 从1978年以来是当代史。", "D. 从2012年以来是当代史。"], "answer": ["A", "B"]}, {"id": 525, "type": "multi", "question": "五四运动与以往民主主义革命的显著区别是（）", "options": ["A. 广泛的群众基础", "B. 在俄国十月革命影响下发生", "C. 工人阶级发挥了主力军的作用", "D. 进行了\"外争主权，内惩国贼\"的斗争", "E. 北洋军阀政府忙于军阀混战"], "answer": ["A", "B", "C", "D"]}, {"id": 526, "type": "multi", "question": "抗日战争进入相持阶段是在：（)", "options": ["A. 北平失陷以后", "B. 南京失陷以后", "C. 武汉失陷以后", "D. 广州失陷以后"], "answer": ["C", "D"]}, {"id": 527, "type": "multi", "question": "奠定维新变法理论基础的康有为的著作有：（)", "options": ["A. 《新学伪经考》", "B. 《孔子改制考》", "C. 《日本变政考》", "D. 《俄彼得变政记》"], "answer": ["A", "B"]}, {"id": 528, "type": "multi", "question": "导致太平天国运动爆发的原因有（） E鸦片战争后阶级矛盾的激化", "options": ["A. 封建统治者的腐朽", "B. 外国资本主义的侵略", "C. 自然灾害严重", "D. 第二次鸦片战争爆发"], "answer": ["A", "B", "C", "E"]}, {"id": 529, "type": "multi", "question": "下列评价符合新文化运动实际情况的有（)", "options": ["A. 是近代第一次重大的思想启蒙运动", "B. 使民主科学观念得到较广泛的传播", "C. 新文化运动动摇了封建正统思想", "D. 整个运动未能给中国人民指明新的前景", "E. 提出了中国文化必须现代化的重大课题"], "answer": ["B", "C", "E"]}, {"id": 530, "type": "multi", "question": "北伐战争打击的主要对象有： ()", "options": ["A. 段祺瑞", "B. 孙传芳", "C. 张作霖", "D. 袁世凯", "E. 吴佩孚"], "answer": ["B", "C", "E"]}, {"id": 531, "type": "multi", "question": "从 1840年至1919年的80年间，中国人民进行的历次反侵略战争失败的主要原 因是：（）", "options": ["A. 社会制度的腐败", "B. 经济技术的落后", "C. 中国民族资产阶级的软弱性和妥协性.没有依靠和发动广大群众", "D. 没有反帝反封建的革命纲领，没有一支强大的革命武装力量"], "answer": ["A", "B"]}, {"id": 532, "type": "multi", "question": "西方列强对中国的侵略大致可分为四类：", "options": ["A. 军事侵略", "B. 思想征服", "C. 文化渗透", "D. 经济掠夺", "E. 政治控制"], "answer": ["A", "C", "D", "E"]}, {"id": 533, "type": "multi", "question": "以袁世凯为首的北洋军阀投靠帝国主义的表现为0", "options": ["A. 基本接受日本提出的严重损害中国权益的“二十一条”", "B. 出卖路权、矿权，大肆借款，并签订众多不平等条约", "C. 扩充军队，建立特务警察系统", "D. 与列强签订“善后大借款\"合同，使列强控制和监督中国财政"], "answer": ["A", "B", "D"]}, {"id": 534, "type": "multi", "question": "下列关于洋务运动的叙述，正确的是： (}", "options": ["A. 是封建地主阶级的改革", "B. 有利于中国的近代化", "C. 没有使中国富强起来", "D. 为资本主义发展开辟了道路"], "answer": ["A", "B", "C"]}, {"id": 535, "type": "multi", "question": "在武昌起义中起了重要作用的两个革命团体是：（）", "options": ["A. 日知会", "B. 文学社", "C. 共进会", "D. 科学补习所"], "answer": ["B", "C"]}, {"id": 536, "type": "multi", "question": "1957年，中国共产党的整风运动主要是整顿（） 三", "options": ["A. 主观主义", "B. 宗派主义", "C. 官僚主义", "D. 教条主义", "E. 本本主义"], "answer": ["A", "B", "C"]}, {"id": 537, "type": "multi", "question": "列强瓜分中国为什么破产（)", "options": ["A. 帝国主义之间的矛盾和相互制约", "B. 中华民族不屈不挠的斗争", "C. 帝国主义自动退出", "D. 清朝政府的努力"], "answer": ["A", "B"]}, {"id": 538, "type": "multi", "question": "以下属于第一个五年计划内实现的项目是（）", "options": ["A. 长春第一汽车制造厂", "B. 宝成铁路", "C. 武汉长江大桥", "D. 包头钢铁基地", "E. 康藏、青藏、新藏公路建成"], "answer": ["A", "C", "D", "E"]}, {"id": 539, "type": "multi", "question": "坚持和完善中国特色社会主义制度，推进国家治理能力和治理体系的现代化的表 现（）", "options": ["A. 描绘坚持和完善中国特色社会主义制度的宏伟蓝图", "B. 我国国家制度和国家治理体系具有多方面的显著优势", "C. 构建中国特色社会主义制度体系的任务", "D. 国家治理现代化对科学完备的法律规范体系的要求"], "answer": ["A", "B", "C", "D"]}, {"id": 540, "type": "multi", "question": "延安整风运动时期，毛泽东推动整风的报告和文章是： () 前题", "options": ["A. 《（共产党人）发刊词》", "B. 《改造我们的学习》", "C. 《整顿党的作风》", "D. 《反对党八股》"], "answer": ["B", "C", "D"]}, {"id": 541, "type": "multi", "question": "维新派与守旧派论战的主要内容有：（)", "options": ["A. 要不要反帝", "B. 要不要变法", "C. 要不要兴民权、设议院，实行君主立宪", "D. 要不要废八股、改科举和兴西学"], "answer": ["B", "C", "D"]}, {"id": 542, "type": "multi", "question": "下列选项中，哪些是对戊戌变法的正确判断（）", "options": ["A. 戊成变法是一场资产阶级性质的政治改良运动", "B. 戊戌变法是一次思想启蒙运动", "C. 戊戌变法对社会进步和教育发展起到了积极的推动作用", "D. 戊成变法是改良派与革命派合作的产物"], "answer": ["A", "B", "C"]}, {"id": 543, "type": "multi", "question": "遵义会议确定了三人军事小组，全权负责红军的军事行动，这三个人是（）", "options": ["A. 周恩来", "B. 王稼祥", "C. 毛泽东", "D. 张闻天"], "answer": ["A", "B", "C"]}, {"id": 544, "type": "multi", "question": "为新中国成立作了理论和路线、方针准备的是（)", "options": ["A. 《共同纲领》", "B. 《中华人民共和国中央人民政府组织法》", "C. 《论联合政府》", "D. 中共七届二中全会决议", "E. 《论人民民主专政》"], "answer": ["D", "E"]}, {"id": 545, "type": "multi", "question": "帝国主义列强对中国进行文化渗透的主要目的是 NOFU马院 人", "options": ["A. 宣扬殖民主义的奴化思想", "B. 进行文化交流", "C. 麻醉中国人民的精神", "D. 摧毁中国人民的自尊"], "answer": ["A", "C", "D"]}, {"id": 546, "type": "multi", "question": "1946年全面内战爆发时，，为了打退国民党对解放区的军事进攻，中共中央提出 两条要求，即（）、（） C 广泛的人民民主统一战线：", "options": ["A. 在政治上，必须和人民群众亲密合作，必须争取一切可以争取的人，在党的领导下建立最", "B. 在文化上，坚持新民主主义文化", "C. 在军事上，必须采取集中优势兵力、各个歼灭敌人的作战原则。", "D. 在经济上，大力发展生产"], "answer": ["A", "C"]}, {"id": 547, "type": "multi", "question": "中共八七会议的主要内容是（)", "options": ["A. 坚决纠正了以陈独秀为代表的右倾投降主义错误", "B. 撤消了陈独秀的职务，确定毛泽东的领导地位", "C. 把发动农民举行秋收起义作为当前党的主要任务", "D. 确定实行土地革命和武装反抗国民党的总方针", "E. 决定把进攻的重点由城市转向农村"], "answer": ["A", "C", "D"]}, {"id": 548, "type": "multi", "question": "实行改革开放是（）", "options": ["A. 社会主义中国的强国之路", "B. 决定当代中国命运的历史性决策", "C. 新时期中国最鲜明的特征", "D. 社会主义国家的一贯政策", "E. 社会主义优越性的表现"], "answer": ["A", "B", "C"]}, {"id": 549, "type": "multi", "question": "中国新民主主义革命胜利的三大法宝是指（）", "options": ["A. 马列主义", "B. 党的建设", "C. 武装斗争", "D. 独立自主", "E. 统一战线"], "answer": ["B", "C", "E"]}, {"id": 550, "type": "multi", "question": "20 世纪30年代前期和中期，中国共产党屡次出现严重\"左\"倾错误的原因有（）", "options": ["A. 八七会议之后\"左\"倾思想没有及时清理", "B. 共产国际的错误干预", "C. 马克思理论准备不足、理论素养不高", "D. 没有将马克思主义理论与中国的具体实际相结合"], "answer": ["A", "B", "C", "D"]}, {"id": 551, "type": "multi", "question": "下列关于重庆谈判的表述中，正确的是（） E共产党通过谈判团结和教育了广大人民", "options": ["A. 共产党与国民党进行了不妥协的斗争", "B. 通过的决议是人民力量的胜利", "C. 国民党被迫承认了和平建国的基本方针", "D. 谈判使国民党在政治上陷入被动局面"], "answer": ["A", "B", "C", "E"]}, {"id": 552, "type": "multi", "question": "在民主革命思想的宣传中，著名的资产阶级革命宣传家有： ()", "options": ["A. 章炳麟", "B. 陈天华", "C. 邹容", "D. 蔡元培"], "answer": ["A", "B", "C"]}, {"id": 553, "type": "multi", "question": "中国封建社会的)、政治、文化、()结构，一方面巩固和维系了中国封建建社会的 稳定和延续，另一方面也使其前\"进缓慢甚至迟滞，并造成不可克服的周期性的政治经济危 机。", "options": ["A. 经济", "B. 思想", "C. 社会", "D. 家庭"], "answer": ["A", "C"]}, {"id": 554, "type": "multi", "question": "“有田同耕，有饭同食，有衣同穿，有钱同使，无处不均匀，无人不饱暖。\"体现 了太平天国：（）", "options": ["A. 绝对平均主义的方案", "B. 具有理想主义色彩", "C. 反映了农民阶级废除封建土地所有制的要求和愿望", "D. 调动了农民生产积极性"], "answer": ["A", "B", "C"]}, {"id": 555, "type": "multi", "question": "国民党为了实行一党专政的军事独裁统治，采取的措施有（）", "options": ["A. 消灭异己、镇压人民", "B. 建立\"中统军统”", "C. 推行保甲制度", "D. 控制舆论、文化专制"], "answer": ["A", "B", "C", "D"]}, {"id": 556, "type": "multi", "question": "我国农业合作化运动的基本原则和方针包括0", "options": ["A. 积极发展、稳步前进、逐步过渡的方针", "B. 坚持自愿和互利的原则", "C. 始终把是否增产作为衡量合作社是否办好的标准", "D. 社会改造同技术改造相结合"], "answer": ["A", "B", "C", "D"]}, {"id": 557, "type": "multi", "question": "资产阶级维新派的主要代表人物是： 0 信刷", "options": ["A. 康有为", "B. 梁启超", "C. 严复", "D. 谭嗣同"], "answer": ["A", "B", "C", "D"]}, {"id": 558, "type": "multi", "question": "中国共产党领导人民进行社会主义建设，有改革开放前和改革开改后两个历史时 期，这两个时期：（)", "options": ["A. 可以孤立来看", "B. 相互联系", "C. 有重大区别", "D. 肯定一个就要否定另一个"], "answer": ["B", "C"]}, {"id": 559, "type": "multi", "question": "抗日战争时期，中国共产党在抗日根据地实行的\"三三制\"政权，政权人员的组成 大体是：（）", "options": ["A. 共产党员占1/3", "B. 农民代表占1/3", "C. 中间分子占1/3", "D. 非党进步分子占1/3", "E. 顽固分子占1/3"], "answer": ["A", "C", "D"]}, {"id": 560, "type": "multi", "question": "郑观应在所著《盛世危言》中提出大力发展民族工商业，同西方国家进行（） 设立（），实行\"君民共主\"制度等主张。此主张具有重要的思想启蒙的意义。", "options": ["A. 商战", "B. 共和", "C. 议院", "D. 君主立宪"], "answer": ["A", "C"]}, {"id": 561, "type": "multi", "question": "1922年7月召开的中国共产党第二次全国代表大会的主要内容有（）", "options": ["A. 科学地阐明了中国社会的半殖民地半封建性质", "B. 提出了反帝反封建的民主革命的纲领", "C. 党的最高纲领是实现社会主义、共产主义", "D. 当前阶段的纲领是\"打倒军阀，推翻国际帝国主义的压迫，统一中国为真正民主共和国\"。", "E. 实行国共合作"], "answer": ["A", "B", "C", "D"]}, {"id": 562, "type": "multi", "question": "洋务运动的特点是 O", "options": ["A. 封建性", "B. 顽强性", "C. 腐朽性", "D. 依赖性", "E. 科学性"], "answer": ["A", "C", "D"]}, {"id": 563, "type": "multi", "question": "近代中国社会阶级关系也发生深刻变动，不仅原有的地主阶级、农民阶级发生了 变化，还有一些新的阶级（）（）（）产生出来「新兴的工人阶级是近代中国最革命的阶级。", "options": ["A. 工人阶级", "B. 资产阶级", "C. 小资产阶级", "D. 破产农民"], "answer": ["A", "B", "C"]}, {"id": 564, "type": "multi", "question": "1912年中国发生的重大事件是： () F:《中华民国临时约法》颁布", "options": ["A. 广州起义", "B. 武昌起义", "C. 清帝退位", "D. 中华民国成立", "E. 袁世凯称帝"], "answer": ["C", "D"]}, {"id": 565, "type": "multi", "question": "五四运动中积极参加这场斗争的阶层有（）", "options": ["A. 爱国学生", "B. 工人阶级", "C. 商人", "D. 地主阶级", "E. 官惊资产阶级"], "answer": ["A", "B", "C"]}, {"id": 566, "type": "multi", "question": "帝国主义侵略中国的目的是（）", "options": ["A. 瓜分中国", "B. 帮助中国消灭封建旧势力", "C. 灭亡中国", "D. 发展中国"], "answer": ["A", "C"]}, {"id": 567, "type": "multi", "question": "解放战争时期的学生运动有哪些（)", "options": ["A. 一二·一运动", "B. 一二三0运动", "C. 五二0运动", "D. 一二九运动"], "answer": ["A", "B", "C"]}, {"id": 568, "type": "multi", "question": "洋务运动创办的军事工业有（）", "options": ["A. 江南制造总局", "B. 福州船政局", "C. 汉阳铁厂", "D. 天津机器制造局", "E. 金陵机器局"], "answer": ["A", "B", "D", "E"]}, {"id": 569, "type": "multi", "question": "中华民族觉醒意识的口号是（)", "options": ["A. 扶清灭洋", "B. 救亡图存", "C. 振兴中华", "D. 自强求富"], "answer": ["B", "C"]}, {"id": 570, "type": "multi", "question": "以鸦片战争为起点的中国近代史分为两个历史阶段。", "options": ["A. 从鸦片战争到五四运动前夜", "B. 从五四运动到中华人民共和国成立", "C. 中华人民共和国成立到改革开放", "D. 从改革开放到当下"], "answer": ["A", "B"]}, {"id": 571, "type": "multi", "question": "下列关于 1952年土地改革后确立的农民土地所有制的表述正确的是（）", "options": ["A. 实质上是一种土地私有制", "B. 它彻底消灭了我国封建剥削土地制度", "C. 它极大地解放了农村生产力", "D. 为农业生产力发展和国家工业化开辟道路", "E. 它标志着中国半封建社会的结末"], "answer": ["A", "B", "C", "D"]}, {"id": 572, "type": "multi", "question": "19 世纪末20世纪初，戊戌变法、辛亥革命等中国人民的探索与抗争同以前有较 大不同，下列表述正确的是：（）", "options": ["A. 民族资产阶级成为运动的领导阶级", "B. 都属于资产阶级民主革命的范畴", "C. 抗争具有广泛的群众基础", "D. 抗争都是在\"瓜分豆剖，迫在眉睫\"的背景下发生的"], "answer": ["A", "B", "D"]}, {"id": 573, "type": "multi", "question": "19 世纪末期，中国陷入\"边疆危机\"的表现是： ()", "options": ["A. 英国从印度侵入西藏", "B. 英国从缅甸入侵云南", "C. 法国从越南侵犯广西", "D. 俄国从中亚入侵新疆", "E. 日本吞并琉球、侵犯中国台湾"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 574, "type": "multi", "question": "中国特色大国外交的表现（)", "options": ["A. 倡导推动构建人类命运共同体", "B. 积极促进一带一路国际合作", "C. 打造全球伙伴关系", "D. 引领全球治理体系改革和建设"], "answer": ["A", "B", "C", "D"]}, {"id": 575, "type": "multi", "question": "以下二战后国际国内战争形势的表述，正确的有（） BFU马院", "options": ["A. 对中国人民实现建设新中国的目标是有利的。", "B. 社会主义国家、民族解放运动力量有了新发展", "C. 帝国主义势力遭到削弱，难以集中力量干涉中国革命", "D. 中国人民觉悟程度和组织程度空前提高。"], "answer": ["A", "B", "C", "D"]}, {"id": 576, "type": "multi", "question": "日本侵华蓄谋已久，九一八事变后又制造（)事变，最终发动了全面侵华战争。", "options": ["A. 九一八", "B. 华北", "C. 七t", "D. 八一三", "E. -二八事变"], "answer": ["B", "E"]}, {"id": 577, "type": "multi", "question": "中国由新民主主义向社会主义转变的条件主要包括(0", "options": ["A. 新民主主义经济制度的建立和国民经济的恢复", "B. 中国共产党的领导和人民民主专政的国家制度的建立", "C. 国家财政经济状况的根本好转", "D. 马克思主义、毛泽东思想的指导地位"], "answer": ["A", "B", "C"]}, {"id": 578, "type": "multi", "question": "太平天国运动的意义有（)", "options": ["A. 严重打击封建统治阶级，强烈撼动了清政府的统治根基", "B. 太平天国还有力地打击了外国侵略势力", "C. 有力推动了资本主义发展", "D. 鼓舞了其他殖民地和半殖民地国家人民的民族解放斗争", "E. 是旧式农民战争的最高峰"], "answer": ["A", "B", "D", "E"]}, {"id": 579, "type": "multi", "question": "1948年秋，人民解放战争进入夺取全国胜利的决定性阶段。之后，先后进行了 三大战役。这三大战役是（)", "options": ["A. 辽沈战役", "B. 平津战役", "C. 渡江战役", "D. 淮海战役"], "answer": ["A", "B", "D"]}, {"id": 580, "type": "multi", "question": "1905- -1907 年年进行的革命派与改良派的大论战，论战双方的主要阵地是： ()", "options": ["A. 《时务报》", "B. 《民报》", "C. 《苏报》", "D. 《新民丛报》"], "answer": ["B", "D"]}, {"id": 581, "type": "multi", "question": "资产阶级革命派与改良派之间论战的内容包括 O", "options": ["A. 要不要学习西方先进的科学技术", "B. 要不要建立民主共和国", "C. 要不要实行平均地权", "D. 要不要以暴力推翻清王朝"], "answer": ["B", "C", "D"]}, {"id": 582, "type": "multi", "question": "造成\"文化大革命\"悲剧的社会原因是（）", "options": ["A. 长期以来\"左\"的倾向没有得到根本扭转", "B. 近代帝国主义侵略", "C. 没有建立完善的社会主义民主法制机制", "D. 中国封建社会历史久远", "E. 中国一穷二白的经济面貌"], "answer": ["A", "C", "D"]}, {"id": 583, "type": "multi", "question": "关于发生在1957年的反右派斗争，描述正确的是（）", "options": ["A. 造成了长时期的严重后果。导致以后偏离了党的八大对社会主要矛盾的正确判断。", "B. 严重扩大化。全国划定右派分子55 万人，绝大部分属于错划。", "C. 采用了大鸣、大放、大辩论、大字报的错误斗争方式。", "D. 是一场群众运动。"], "answer": ["A", "B", "C", "D"]}, {"id": 584, "type": "multi", "question": "整风运动的主要内容是： ()", "options": ["A. 整顿学风", "B. 整顿党风", "C. 整顿文风", "D. 整顿浮夸风"], "answer": ["A", "B", "C"]}, {"id": 585, "type": "multi", "question": "资本一帝国主义通过什么手段对中国进行侵略（)", "options": ["A. 军事侵略", "B. 政治控制", "C. 经济掠夺", "D. 文化渗透"], "answer": ["A", "B", "C", "D"]}, {"id": 586, "type": "multi", "question": "新中国成立之初，中国共产党面临的考验有（)", "options": ["A. 能不能保卫住人民胜利的成果，巩固新生的人民政权。", "B. 能不能战胜严重的经济困难，迅速恢复和发展国民经济", "C. 能不能巩固民族独立，维护国家主权和安全", "D. 能不能经受住执政的考验，继续保持优良传统和作风"], "answer": ["A", "B", "C", "D"]}, {"id": 587, "type": "multi", "question": "文革中的\"四人帮\"是（)", "options": ["A. 陈伯达", "B. 江青", "C. 张春桥", "D. 姚文元", "E. 王洪文"], "answer": ["B", "C", "D", "E"]}, {"id": 588, "type": "multi", "question": "李大钊是逐步从民主主义者转变为共产主义者的。1918--1919年间，他发表了 数篇著名文章，宣传马克思主义： 0", "options": ["A. 《我的马克思主义观》", "B. 《庶民的胜利》", "C. 《布尔什维主义的胜利》", "D. 《法俄革命之比较观》"], "answer": ["A", "B", "C", "D"]}, {"id": 589, "type": "multi", "question": "以下描述与中国共产党的成立相关的是（） D\"红船精神\" E\"洪水猛兽\"、\"过激主义\"", "options": ["A. 成立于俄国十月革命取得胜利，第二国际社会民主主义、修正主义遭到破产之后。", "B. 中国共产党的成立是中华民族发展史上开天辟地的大事变，。", "C. 初心和使命"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 590, "type": "multi", "question": "\"三反\"运动的基本内容是什么？ ()", "options": ["A. 反贪污", "B. 反浪费", "C. 反官僚主义", "D. 反腐败"], "answer": ["A", "B", "C"]}, {"id": 591, "type": "multi", "question": "南昌起义的主要领导人是（）", "options": ["A. 周恩来", "B. 贺龙", "C. 叶挺", "D. 朱德", "E. 刘伯承"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 592, "type": "multi", "question": "下列属于宣传民主革命思想的著作有（)", "options": ["A. 《驳康有为论革命书》", "B. 《革命军》", "C. 《猛回头》", "D. 《警世钟》", "E. 《新民丛报》"], "answer": ["A", "B", "C", "D"]}, {"id": 593, "type": "multi", "question": "全国胜利后，中国社会经济中存在着哪几种经济成分（） 重小程", "options": ["A. 社会主义性质的国营经济", "B. 半社会主义性质的合作社经济", "C. 农民和手工业者的个体经济", "D. 私人资本主义经济", "E. 国家资本主义经济"], "answer": ["A", "B", "C", "D", "E"]}, {"id": 594, "type": "multi", "question": "为了防范袁世凯的独裁野心，1912年2月14 日，临时大总统孙中山在给临时参 议院的辞职咨文中提出辞职的附加条件是0", "options": ["A. 新总统到南京就职", "B. 清帝退位", "C. 新总统要遵守《中华民国临时约法》", "D. 临时政府设在南京"], "answer": ["A", "C", "D"]}, {"id": 595, "type": "multi", "question": "中共八大的路线对我国社会主义事业具有深远的意义。这主要是因为八大（)", "options": ["A. 正确认识了中国社会的主要矛盾", "B. 强调正确处理人民内部矛盾", "C. 明确提出集中力量发展生产力", "D. 规定了在综合平衡中稳步前进的经济方针", "E. 明确提出了多快好省的社会主义建设总路线"], "answer": ["A", "C", "D"]}, {"id": 596, "type": "multi", "question": "帝国主义对中国军事掠夺的手段主要有（)", "options": ["A. 发动战争，居杀人民", "B. 剥夺关税自主权", "C. 侵占领土，划分势力范围", "D. 勒索赔款，抢夺财富"], "answer": ["A", "C", "D"]}, {"id": 597, "type": "multi", "question": "英国的鸦片走私给中国造成至少哪四项（）巨大危害。 C毒害了中国人的身体", "options": ["A. 造成了中国的白银大量外流和财政危机", "B. 导致银贵钱贱，加重了劳动人民的负担", "D. 戕害了国人的精神意志"], "answer": ["A", "B", "C", "D"]}, {"id": 598, "type": "multi", "question": "\"两个一百年\"的奋斗目标是：（） FU马院", "options": ["A. 到中国共产党成立 100年时全面建成小康社会", "B. 到2020年，中国的GDP总量将要达到世界第", "C. 到2050年，中国彻底成为法治国家", "D. 到新中国成立100年时建成富强民主文明和谐的社会主义现代化国家"], "answer": ["A", "D"]}, {"id": 599, "type": "multi", "question": "毛泽东在《关于正确处理人民内部矛盾的问题》一文中提出的解决人民内部矛盾 的方法是（） 民 E\"团结批评一团结\"的方法", "options": ["A. 民主的方法", "B. 说服教育的方法", "C. \"大鸣、大放、大字报、大辩论\"的方法", "D. 群众性的大批判的方法"], "answer": ["A", "B", "E"]}, {"id": 600, "type": "multi", "question": "中国封建社会长期延续的经济、政治、文化、社会结构，造成了以下几种后果：", "options": ["A. 一方面巩固和维系了中国封建社会的稳定和延续。另一方面也使其前进缓慢甚至迟滞", "B. 另一方面也使其前进缓慢甚至迟滞。", "C. 并造成不可克服的周期性的政治经济危机。", "D. 没有产生资本主义萌芽。"], "answer": ["A", "B", "C"]}, {"id": 601, "type": "multi", "question": "社会主义改造时期对资产阶级的\"和平赎买\"政策主要包括0", "options": ["A. \"四马分肥\"中的资方红利", "B. 公私全营后资本家拿取的定息", "C. 给资本家以必要的工作安排和恰当的政治安排", "D. 委托加工、计划订货的加工费和货价"], "answer": ["A", "B", "C", "D"]}, {"id": 602, "type": "multi", "question": "1956年底，三大改造的实现标志着（)", "options": ["A. 过渡时期的总路线总任务提前完成", "B. 我国已由农业国转变为工业国", "C. 我国开始进入社会主义初级阶段", "D. 国内主要矛盾发生变化", "E. 以生产资料私有制为基础的阶级剥削制度已经被消灭"], "answer": ["C", "D", "E"]}, {"id": 603, "type": "multi", "question": "1927年1月，中国人民收回的英租界是在：（）", "options": ["A. 汉口", "B. 上海", "C. 南京", "D. 九江"], "answer": ["A", "D"]}, {"id": 604, "type": "multi", "question": "下列关于林则徐、魏源等倡导新思想的代表人物的评述，正确的是（）", "options": ["A. 都是地主阶级开明知识分子", "B. 其思想都带有鲜明的时代特点", "C. 都主张放眼世界、探索救国之路", "D. 都未能完全冲破封建思想的牢笼", "E. 都主张不仅学习西方的技术，还要效法政治制度"], "answer": ["A", "B", "C", "D"]}, {"id": 605, "type": "multi", "question": "《辛丑条约》对中国社会的影响() ·:清朝政府彻底成为帝国主义统治中国的工具", "options": ["A. 它是帝国主义列强强加给中国的一个不平等条约", "C. 中国半殖民地半封建社会统治秩序完全确立", "D. 中国半殖民地半封建形成"], "answer": ["B", "C"]}, {"id": 606, "type": "multi", "question": "“自从有了中国共产党，中国革命的面貌将焕然一新了。\"这里的新指（）", "options": ["A. 以马克思主义为指导思想", "B. 以武装斗争为主要手段", "C. 以无产阶级为革命领导", "D. 提出民主革命的前途为社会主义", "E. 以实现共产主义为目标"], "answer": ["A", "C", "D", "E"]}, {"id": 607, "type": "truefalse", "question": "《天朝田亩制度》的中心内容是推翻清王朝的反动统治。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 608, "type": "truefalse", "question": "辛亥革命失败的主要原因不能归结为是由于袁世凯窃取了辛亥革命的成果。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 609, "type": "truefalse", "question": "新文化运动提倡民主与科学。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 610, "type": "truefalse", "question": "中国共产党在抗日战争时期的土地政策是没收地主土地，彻底消灭土地所有制。 () 马院", "options": ["对", "错"], "answer": ["错"]}, {"id": 611, "type": "truefalse", "question": "新中国成立后，在外交上实行了“另起炉灶\"、\"打扫干净屋子再请客\"及“一边倒” 的外交方针。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 612, "type": "truefalse", "question": "新中国在利用资本主义工商业的过程中，已经开始对它进行适当的限制，并把其 中大部分引上了初级形式的国家资本主义道路。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 613, "type": "truefalse", "question": "辛亥革命是新民主主义革命的伟大开端。 () S", "options": ["对", "错"], "answer": ["错"]}, {"id": 614, "type": "truefalse", "question": "太平天国失败的标志是天京事变。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 615, "type": "truefalse", "question": "彭德怀元帅指出：\"它雄辩地证明，西方侵略者几百年来，只要在东方的海岸上， 架起几尊大炮，就可以霸占一个国家的时代一去不复还了\"。此处“它\"指抗美援朝保家卫国 战争。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 616, "type": "truefalse", "question": "变法维新运动中，维新派通过与顽固派的论战，开阔了眼界，认清了清王朝的反 动本质，摆脱了封建思想的束缚，从而为变法维新运动的开展奠定了思想基础。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 617, "type": "truefalse", "question": "近代中国历史进程中，资本帝国主义势力没有操控中国的财政经济命脉。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 618, "type": "truefalse", "question": "五四运动促进了马克思主义同中国工人运动的结合。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 619, "type": "truefalse", "question": "民族资产阶级同外国资本主义、本国封建主义仍然有着千丝万缕的联系，在政治 上表现出两面性。)", "options": ["对", "错"], "answer": ["对"]}, {"id": 620, "type": "truefalse", "question": "中国的抗战是从1937年七七事变开始的。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 621, "type": "truefalse", "question": "中国民族资产阶级与帝国主义、封建势力联系较少，受帝国主义、封建势力的压 迫较深，因而具有较强的革命性，成为资产阶级革命派的阶级基础。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 622, "type": "truefalse", "question": "土地制度的彻底改革，是解放战争时期中国革命一项基本任务。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 623, "type": "truefalse", "question": "在2017年中共十九大上，大会通过的党章修正案把习近平新时代中国特色社会 主义思想确立为党的行动指南。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 624, "type": "truefalse", "question": "民族区域自治制度成熟后，藏族自治区率先成立。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 625, "type": "truefalse", "question": "中国共产党的成立，深刻改变了近代以后中华民族发展的方向和进程，深刻改变 了中国人民和中华民族的前途和命运，深刻改变了世界发展的趋势和格局。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 626, "type": "truefalse", "question": "护国运动开始时，黄兴回云南发动反袁战争。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 627, "type": "truefalse", "question": "第一次国共合作的组织形式是改组后的国民党。 0 NFU马院", "options": ["对", "错"], "answer": ["对"]}, {"id": 628, "type": "truefalse", "question": "改革开放和现代化建设事业进入从计划经济体制向社会主义市场经济体制转变 的新阶段的标志是邓小平南方谈话和党的十四大。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 629, "type": "truefalse", "question": "1978年召开的中共一一届三中全会，决定恢复邓小平在1976 年被撤销的一切职 务。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 630, "type": "truefalse", "question": "1951年底到 1952年开展了反贪污反浪费，反官僚主义的三反运动。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 631, "type": "truefalse", "question": "1956年，毛泽东发动了大跃进和\"文化大革命\"。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 632, "type": "truefalse", "question": "重庆谈判和政治协商会议斗争的焦点是革命的领导权问题。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 633, "type": "truefalse", "question": "孙中山为了进行国共合作，毅然改组国民党，实行联俄、联共、扶助工人的三大 政策。（） 马院", "options": ["对", "错"], "answer": ["错"]}, {"id": 634, "type": "truefalse", "question": "1927年后国民党统治时期我国的社会性质是半殖民地半资本主义社会。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 635, "type": "truefalse", "question": "民族资产阶级是中国新民主主义革命的对象。 () X", "options": ["对", "错"], "answer": ["错"]}, {"id": 636, "type": "truefalse", "question": "兴中会是近代中国第一个全国性的资产阶级革命团体。 () 是页", "options": ["对", "错"], "answer": ["对"]}, {"id": 637, "type": "truefalse", "question": "新时代全面贯彻\"一国两制\"方针，首先要牢牢掌握宪法和基本法赋予的中央对香 港、澳门全面管治权。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 638, "type": "truefalse", "question": "以下评论是否正确：中法战争是近代中国几乎唯一取胜的战争。但由于当权者力 主避战求和，接受法国条件，签订了不平等的《中法新约》，中法战争最终以“中国不败而 败，法国不胜而胜\"而告结束。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 639, "type": "truefalse", "question": "允许外国人在通商口岸\"投资设厂\"，这是八国联军侵华战争以后，清政府与11 国代表签订的《辛丑条约》中的条款之一（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 640, "type": "truefalse", "question": "\"九一八事变\"标志着抗日战争在中国的全面爆发。 O", "options": ["对", "错"], "answer": ["错"]}, {"id": 641, "type": "truefalse", "question": "我们必须打败蒋介石，因为蒋介石发动的战争，是一个在美帝国主义指挥之下的 反对中国民族独立和中国人民解放的反革命的战争。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 642, "type": "truefalse", "question": "抗战中，中国共产党对待中间势力的策略是有力、有理、有节。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 643, "type": "truefalse", "question": "1929年 12月下旬，在福建上杭县古田村召开了红四军第九次党代表会议，也叫 古田会议，规定红军必须绝对服从共产党的领导。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 644, "type": "truefalse", "question": "三民主义是一个比较完备而又彻底的资产阶级革命纲领。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 645, "type": "truefalse", "question": "中国半殖民地半封建社会的含义是指中国 50%是殖民地，50%是封建社会。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 646, "type": "truefalse", "question": "遵义会议后，中共中央政治局成立了三人军事指挥小组，其成员有毛泽东、周恩 来、朱德。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 647, "type": "truefalse", "question": "北洋军阀是在清朝灭亡后由袁世凯建立起来的带有浓厚封建性的反动政治武装 集团。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 648, "type": "truefalse", "question": "抗战中，国民党军队一触即溃，所以，抗日战争的胜利完全是共产党领导八路军， 新四军进行艰苦奋斗的结果。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 649, "type": "truefalse", "question": "洋务运动破产的根本原因是西方列强的破坏。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 650, "type": "truefalse", "question": "中国的民主党派，多数成立于大革命时期和十年内战时期，少数成立于抗日战争 时期和全国解放战争时期。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 651, "type": "truefalse", "question": "中国抗战以来第一次大捷是台儿庄大捷。 O", "options": ["对", "错"], "answer": ["错"]}, {"id": 652, "type": "truefalse", "question": "新中国民主政治建设发展历程的标志性事件是《中华人民共和国宪法》的通过。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 653, "type": "truefalse", "question": "中国民族资本主义经济的发展受到了多方面的阻碍，其中包括外国资本主义的压 迫，官僚资本的排挤，封建生产关系的束缚和军阀官僚政府的压榨。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 654, "type": "truefalse", "question": "第一次全国代表大会确定了党的名称为中国共产党，同时宣布了中国共产党的成 立。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 655, "type": "truefalse", "question": "中国共产党在抗日战争时期，改变没收地主土地分配给农民的政策，实行减租减 息以减轻农民所受的封建剥削，同时交租交息以联合地主阶级抗日。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 656, "type": "truefalse", "question": "同盟会是近代中国第一个领导资产阶级革命的全国性政党。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 657, "type": "truefalse", "question": "辛孩革命是一朵不结果实的花。 () NJFI 衣", "options": ["对", "错"], "answer": ["错"]}, {"id": 658, "type": "truefalse", "question": "1905年孙中山提出三民主义中的民族主义其直接目标是反对帝国主义。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 659, "type": "truefalse", "question": "中共十一届三中全会比较系统地阐述了关于社会主义初级阶段的理论，完整地概 括了“一个中心、两个基本点\"的基本路线，制定了下一步经济体制改革和政治体制改革的基 本任务和奋斗自标。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 660, "type": "truefalse", "question": "中国人民政治协商会议第一届全体会议通过的《中国人民政治协商会议共同纲领》 有临时宪法的作用。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 661, "type": "truefalse", "question": "1640年英国资产阶级革命标志着世界历史开始进入资本主义时代。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 662, "type": "truefalse", "question": "1851年1月，洪秀全率拜上帝教教众发动起义，建号太平天国。1853年3月， 占领南京，定为首都，改名天京。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 663, "type": "truefalse", "question": "官僚资本是近代中国的垄断资本。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 664, "type": "truefalse", "question": "中国梦的本质是国家富强、民族振兴、人民幸福。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 665, "type": "truefalse", "question": "抗战整个过程中，中国军民共歼灭日军250余万人。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 666, "type": "truefalse", "question": "鸦片战争后，我国劳动人民日益贫困，自然经济解体是其根本原因。 )", "options": ["对", "错"], "answer": ["错"]}, {"id": 667, "type": "truefalse", "question": "我国的社会主义革命必须走农村包围城市的道路。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 668, "type": "truefalse", "question": "在1927年大革命失败后，国民党不再是工人、农民、城市小资产阶级的革命联 盟，而是一个由代表地主阶级、买办性的大资产阶级利益的反动集团所控制的政党。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 669, "type": "truefalse", "question": "中国共产党第二次全国代表大会制定的最低纲领，是彻底的反帝反封建的民主革 命纲领。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 670, "type": "truefalse", "question": "《资政新篇》是洪仁玕提出的一个农业社会主义方案。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 671, "type": "truefalse", "question": "社会主义改造是与社会主义工业化建设的任务同步进行的。 0 J乌院", "options": ["对", "错"], "answer": ["对"]}, {"id": 672, "type": "truefalse", "question": "戊戌维新是资产阶级维新派发动的一次救亡图存的爱国运动。", "options": ["对", "错"], "answer": ["对"]}, {"id": 673, "type": "truefalse", "question": "在社会主义经济建设方面，毛泽东提出，要实行以农业为基础，以工业为主导的 方针，正确处理工业，轻工业和农业的关系，以重、农、轻为序发展国民经济。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 674, "type": "truefalse", "question": "鸦片战争前中国就是半殖民地半封建社会。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 675, "type": "truefalse", "question": "五四运动爆发的根本原因是巴黎和会中国外交的失败。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 676, "type": "truefalse", "question": "列强瓜分中国图谋破产的真正原因是帝国主义列强之间的矛盾和互相制约。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 677, "type": "truefalse", "question": "洋务运动的指导思想是\"中学为体，西学为用\"。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 678, "type": "truefalse", "question": "大跃进严重脱离了农村的生产力水平，损害了广大社员和集体的利益。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 679, "type": "truefalse", "question": "1964年，中国成功地爆炸了第一颗原子弹。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 680, "type": "truefalse", "question": "魏源《海国图志》是在林则徐《四洲志》基础上写成的。 O", "options": ["对", "错"], "answer": ["对"]}, {"id": 681, "type": "truefalse", "question": "在共产党早期组织的领导下，1920年1月社会主义青年团在上海成立。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 682, "type": "truefalse", "question": "党的十六大明确回答了新世纪新阶段中国共产党举什么旗、走什么路、实现什么 样的发展目标等重大问题。从此，中国人民踏上了全面建设小康社会的新征程。 ) 题", "options": ["对", "错"], "answer": ["对"]}, {"id": 683, "type": "truefalse", "question": "中共十三大提出，中国共产党在新的历史时期的总任务是：团结全国各族人民， 自力更生，艰苦奋斗，逐步实现工业、农业、国防和科学技术现代化，把我国建设成为高度 文明高度民主的社会主义国家。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 684, "type": "truefalse", "question": "毛泽东提出由新民主主义社会转变为社会主义社会的总任务和主要途径的著作 是《论人民民主专政》。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 685, "type": "truefalse", "question": "新民主主义的三大经济纲领是：没收封建地主阶级的土地归农民所有，没收官惊 资本主义和民族工商业归新民主主义国家所有。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 686, "type": "truefalse", "question": "兵民是胜利之本。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 687, "type": "truefalse", "question": "中国共产党在中国革命中战胜敌人的三个法宝是：统一战线、武装斗争、党的建 设。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 688, "type": "truefalse", "question": "戊戌维新运动的宗旨是中体西用。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 689, "type": "truefalse", "question": "抗战胜利后，蒋介石发动内战的方针已定，因此谈判是没有必要的。 () 号", "options": ["对", "错"], "answer": ["错"]}, {"id": 690, "type": "truefalse", "question": "洋务运动使中国国富兵强起来了。) 小匙", "options": ["对", "错"], "answer": ["错"]}, {"id": 691, "type": "truefalse", "question": "2003年10月党的十六届三中全会第一次在党的正式文件中完整地提出了科学发 展观，强调\"坚持以人为本，树立全面、协调、可持续的发展观，促进经济社会和人的全面 发展\"。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 692, "type": "truefalse", "question": "早期马克思主义思想运动重视对马克思主义基本理论的学习，注意从中国的实际 出发，开始提出知识分子应当同劳动者相结合的思想。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 693, "type": "truefalse", "question": "1900年6月，八国联军发动侵华战争后，清政府经过激烈的争论，决定支持义 和团的反帝斗争，并允许义和团进入北京，表明清政府反对八国联军的侵略，态度是坚决的。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 694, "type": "truefalse", "question": "1945 年8月28日，毛泽东同周恩来、王若飞赴重庆与国民党当局进行谈判。 ) 奶", "options": ["对", "错"], "answer": ["对"]}, {"id": 695, "type": "truefalse", "question": "抗日战争时期，大地主大资产阶级是抗日民族统一战线的组成部分 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 696, "type": "truefalse", "question": "1947年10月国民党当局宣布民盟\"为非法团体\"，明令\"严加取缔\"。此后，民盟 放弃了其政治主张，站到了新民主主义革命的立场上。（) 么", "options": ["对", "错"], "answer": ["对"]}, {"id": 697, "type": "truefalse", "question": "抗日战争的初期和中期，游击战具有一定的战略地位和全局意义。 )", "options": ["对", "错"], "answer": ["对"]}, {"id": 698, "type": "truefalse", "question": "帝国主义的侵略和封建主义的压迫是近代中国贫穷落后的根源。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 699, "type": "truefalse", "question": "抗战爆发后，东部沿海地区企业、学校内迁。北京大学、清华大学、南开大学分 别由北平、天津迁往昆明，合并组建国立西南联合大学。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 700, "type": "truefalse", "question": "西方殖民者在亚洲要完成\"双重使命\"”\"一是破坏性使命，即消灭旧的亚洲式社会， 另一是建设性使命，即在亚洲为西方式社会奠定物质基础。”（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 701, "type": "truefalse", "question": "中国是在实现工业化的情况下进入社会主义的。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 702, "type": "truefalse", "question": "1953年，中共提出了过渡时期总路线，开始制定和实施第一个五年计划（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 703, "type": "truefalse", "question": "洋务派不主张进行政治变革的根本原因是看不到资本主义制度的先进性。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 704, "type": "truefalse", "question": "中国人民进行了 14年艰苦卓绝的抗日战争。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 705, "type": "truefalse", "question": "抗日战争时期，中国共产党在农村的土地政策是没收地主的土地分配给农民。 () 福", "options": ["对", "错"], "answer": ["错"]}, {"id": 706, "type": "truefalse", "question": "五四运动是中国新民主主义革命的开端。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 707, "type": "truefalse", "question": "辛亥革命是一次比较完全意义上的资产阶级民主革命。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 708, "type": "truefalse", "question": "近代中国人民反侵略战争失败的根本原因是武器装备的落后。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 709, "type": "truefalse", "question": "戊戌维新运动实质上是一场封建统治阶级的自救运动。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 710, "type": "truefalse", "question": "从1978年十一届三中全会召开以来至今，是改革开放和社会主义现代化建设新 时期。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 711, "type": "truefalse", "question": "井冈山道路适用于一切国家。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 712, "type": "truefalse", "question": "1917年俄国的十月革命，推动了社会主义思想在中国的传播。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 713, "type": "truefalse", "question": "变法维新运动的性质是资产阶级领导的反帝爱国运动。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 714, "type": "truefalse", "question": "抗日战争中，国民党正面战场是抗日的主战场。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 715, "type": "truefalse", "question": "抗战进入相持阶段后，国民党却走上了消极抗日、积极反共的道路。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 716, "type": "truefalse", "question": "中国资产阶级有两个部分，即官僚资产阶级和民族资产阶级。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 717, "type": "truefalse", "question": "\"统分结合\"的农村家庭联产承包责任制的普遍实行，促进了\"政社合一\"的人民公 社体制的解体。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 718, "type": "truefalse", "question": "中国资产阶级不能领导中国革命完成反帝反封建的历史任务。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 719, "type": "truefalse", "question": "日本侵华战争采取的是\"速战速决\"的战略。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 720, "type": "truefalse", "question": "中共十一届三中全会冲破长期\"右\"的错误的严重束缚，彻底否定了\"两个凡是\"的 错误方针，高度评价了关于真理标准问题的讨论。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 721, "type": "truefalse", "question": "中共八大后，毛泽东提出，可以消灭了资本主义、又搞资本主义，并把它称作\"新 经济政策\"。受到了刘少奇、周恩来等领导人的赞同（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 722, "type": "truefalse", "question": "共产党的领导的革命包括新民主主义革命和社会主义革命两个阶段。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 723, "type": "truefalse", "question": "辛亥革命胜利了，又失败了。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 724, "type": "truefalse", "question": "使近代中国开始沦为半殖民地半封建社会的第一个不平等条约是《辛丑条约》 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 725, "type": "truefalse", "question": "南京临时政府不是一个资产阶级性质的政权。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 726, "type": "truefalse", "question": "鸦片战争和中英《南京条约》的签订，标志着中国半殖民地半封建社会的正式形 成。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 727, "type": "truefalse", "question": "《关于建国以来党的若干历史问题的决议》没有从根本上否定\"文化大革命\"的理 论和实践，但对新中国成立以来的重大历史事件作出了基本结论。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 728, "type": "truefalse", "question": "在中国近代史上，《辛丑条约》是帝国主义向中国勒索最多赔款的条约。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 729, "type": "truefalse", "question": "抗日战争胜利后，国共两党举行了重庆谈判，以商谈关于中国和平发展问题。 () 茶", "options": ["对", "错"], "answer": ["对"]}, {"id": 730, "type": "truefalse", "question": "鸦片战争是虎门销烟引起的。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 731, "type": "truefalse", "question": "1925年到1927年中国反帝反封建的革命被称作大革命。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 732, "type": "truefalse", "question": "第一次国共合作的政治基础是孙中山的旧三民主义。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 733, "type": "truefalse", "question": "1954年第一次全国人民代表大会通过宪法后进入了社会主义初级阶段。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 734, "type": "truefalse", "question": "中国新民主主义革命实现的首要任务是反对封建主义，反对官僚资本主义的压迫。 警 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 735, "type": "truefalse", "question": "历史已经判明，“文化大革命\"是一场由领导者错误发动，被反革命集团利用，给 党、国家和各族人民带来严重灾难的内乱。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 736, "type": "truefalse", "question": "1972年2月，美国总统尼克松访华，中美双方在上海发表联合公报。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 737, "type": "truefalse", "question": "中国共产党战胜国民党反动派的军事原则是集中优势兵力，各个歼灭敌人。 (0 题", "options": ["对", "错"], "answer": ["对"]}, {"id": 738, "type": "truefalse", "question": "遵义会议开始确立以毛泽东为代表的马克思主义的正确路线在中共中央的领导 地位。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 739, "type": "truefalse", "question": "1945年8月25日，中共中央提出“和平、民主、团结\"三大口号的文件是《抗日 战争胜利后的时局和我们的方针》。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 740, "type": "truefalse", "question": "中国革命的新道路是\"农村包围城市，武装夺取政权\"。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 741, "type": "truefalse", "question": "以下描述是否正确：帝国主义者为了制造侵略有理的舆论，还大肆宣扬\"种族优 劣论\"。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 742, "type": "truefalse", "question": "中国封建社会前后延续两千多年。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 743, "type": "truefalse", "question": "中国是第一次世界大战的战胜国。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 744, "type": "truefalse", "question": "\"城市中心论\"是适合我国实际的革命理论。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 745, "type": "truefalse", "question": "中共六届六中全会被毛泽东称赞为是“是决定中国之命运的\"。全会纠正了王明的 右倾错误，巩固了毛泽东在全党的地位，统一了全党的思想和步调，推动了各项工作的迅速 发展。毛泽东还在会上明确提出了\"马克思主义中国化\"的命题。", "options": ["对", "错"], "answer": ["对"]}, {"id": 746, "type": "truefalse", "question": "大跃进和人民公社化运动违背了社会发展的客观规律。 )", "options": ["对", "错"], "answer": ["对"]}, {"id": 747, "type": "truefalse", "question": "\"公车上书\"揭开了变法维新运动的序幕。 （)", "options": ["对", "错"], "answer": ["对"]}, {"id": 748, "type": "truefalse", "question": "中国共产党从成立之日起，就肩负着中华民族伟大复兴的历史使命。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 749, "type": "truefalse", "question": "中国在鸦片战争中的失败，对国人的刺激极大。使中华民族的各阶级、各阶层普 遍产生了亡国灭种的危机感。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 750, "type": "truefalse", "question": "产生近代军阀割据混战的直接原因是由于袁世凯死了，失去了其总头目。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 751, "type": "truefalse", "question": "从 1956年社会主义改造基本完成到 1966年文化大革命的前夕，是开始全面建设 社会主义的十年。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 752, "type": "truefalse", "question": "林则徐是近代中国睁眼看世界的第一人。他主持编成了叙述世界五大洲30多个 国家地理、历史的《四洲志》。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 753, "type": "truefalse", "question": "抗日战争胜利之后，在中国人民面前摆着两条路，光明的路和黑暗的路。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 754, "type": "truefalse", "question": "中国资产阶级包括买办资产阶级、民族资产阶级和小资产阶级。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 755, "type": "truefalse", "question": "新中国成立以来的历史昭示我们，没有以毛泽东为核心的党的第一代领导集体团 结带领全党全国各族人民浴血奋斗，就没有新中国，就没有中国社会主义制度。没有以邓小 平为核心的第二代领导集体团结带领全党全国各族人民改革创新，就没有改革开放的历史新 时期，就没有中国特色社会主义（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 756, "type": "truefalse", "question": "新民主主义社会是在建国后才开始出现的。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 757, "type": "truefalse", "question": "中央红军主力开始长征后，项英，陈毅等率领中央根据地留下的部分红军在南方 坚持进行艰苦的游击战争。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 758, "type": "truefalse", "question": "中国革命必须通过武装斗争才能取得胜利。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 759, "type": "truefalse", "question": "延安整风运动的中心内容是反对宗派主义。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 760, "type": "truefalse", "question": "中华人民共和国的成立，标志着中国进入了社会主义初级阶段。 (0", "options": ["对", "错"], "answer": ["错"]}, {"id": 761, "type": "truefalse", "question": "鸦片战争后，中国自然经济的基础虽然被破坏，地主阶级和农民两个阶级的对抗 缓和了。 (0", "options": ["对", "错"], "answer": ["错"]}, {"id": 762, "type": "truefalse", "question": "重庆谈判期间，中国共产党领导人民军队取得自卫战争胜利的战役是邯郸战役。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 763, "type": "truefalse", "question": "1936年 10月，红二、四方面军先后同红一方面军在会宁会师。至此，三大主力 军的长征胜利结束。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 764, "type": "truefalse", "question": "1912年3月，临时参议院颁布《中华民国临时约法》。这是中国历史上第一部 具有资产阶级共和国宪法性质的法典。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 765, "type": "truefalse", "question": "鸦片战争后，西方列强一再谋求扩大在华的传教权，其根本目的是传播西方文化。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 766, "type": "truefalse", "question": "新中国成立后，全国各族人民在中国共产党领导下探索、开创、发展中国特色社 会主义，为实现国家繁荣富强、人民共同富裕这一历史任务而不懈奋斗，这是新中国历史发 展的主题和主线。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 767, "type": "truefalse", "question": "人民公社实行\"政社合一\"的体制，其基本特点被概括为“一大二公\"。\"大\"是指规模 大，“公\"是指公有化。它严重地脱离了农村的生产力水平，致使“一平二调”(\"亚\"，指在公 社范围内实行贫富拉亚，平均分配；\"调\"，指县社两级无偿调拨生产队和社员个人的财物和 劳动力）之风泛滥，损害了广大社员和小集体的利益。（） 程", "options": ["对", "错"], "answer": ["对"]}, {"id": 768, "type": "truefalse", "question": "辛亥革命的发生，虽是当时民族危机加深、社会矛盾激化的结果，但也并不具有 历史的必然性。", "options": ["对", "错"], "answer": ["错"]}, {"id": 769, "type": "truefalse", "question": "中国近代\"睁眼看世界的第一人\"是严复。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 770, "type": "truefalse", "question": "19世纪末，欧美帝国主义者还炮制了所谓\"黄祸论\"，即中国\"威胁\"论。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 771, "type": "truefalse", "question": "1956年召开全国人民代表大会，第一次会议，通过《中华人民共和国宪法》 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 772, "type": "truefalse", "question": "社会主义初级阶段是任何国家进入社会主义社会时都必须经历的阶段。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 773, "type": "truefalse", "question": "中共八大会议对于正在急剧膨胀的\"左\"倾错误起了一定程度的遏制作用。 ) 女", "options": ["对", "错"], "answer": ["错"]}, {"id": 774, "type": "truefalse", "question": "习近平总书记不仅提出了中国梦，还提出了\"强军梦\"。指出要实现中华民族的伟 大复兴，一定要坚持富国和强军相统一，建设巩固国防和强大军队。 0", "options": ["对", "错"], "answer": ["对"]}, {"id": 775, "type": "truefalse", "question": "外国侵略者劫洗并烧毁圆明园的罪行发生在第一次鸦片战争。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 776, "type": "truefalse", "question": "1978年12月召开的中共十十届三中全会，成功实现了全党工作重心的转移。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 777, "type": "truefalse", "question": "太平天国革命发生的原因是封建势力的残暴统治。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 778, "type": "truefalse", "question": "近代中国要争得民族独立和人民解放，首先要进行反帝反封建民主革命。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 779, "type": "truefalse", "question": "新中国的成立标志着近代以来逐步形成的半殖民地、半封建社会社会的结末。()", "options": ["对", "错"], "answer": ["对"]}, {"id": 780, "type": "truefalse", "question": "1922年7月，中共二大提出了反帝反军阀的民主革命纲领。 （)", "options": ["对", "错"], "answer": ["对"]}, {"id": 781, "type": "truefalse", "question": "中国共产党成立，第一次提出了反帝反封建的民主革命的纲领，为中国人民指出 了明确的斗争目标。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 782, "type": "truefalse", "question": "中国政府还在美国侵略军把朝鲜战争的战火烧到鸭绿江边时，毅然做出抗美援朝 的决策。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 783, "type": "truefalse", "question": "辛亥革命结束了两千多年的君主专制统治，建立了中国历史上第一个资产阶级共 和国，所以，辛亥革命的胜利彻底改变了中国半殖民地半封建社会的性质。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 784, "type": "truefalse", "question": "社会主义改造是在1949年建国时基本完成的。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 785, "type": "truefalse", "question": "1949年9月，中华人民共和国第一届全国人民代表大会第一次会议在北京召开 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 786, "type": "truefalse", "question": "没收资本工作的完成和工业建设的发展，使中国已经有了比较强大的社会主义性 质的私营经济。)", "options": ["对", "错"], "answer": ["错"]}, {"id": 787, "type": "truefalse", "question": "抗日民族统一战线形成后，必须\"一切经过统一战线\"，“一切服从统一战线\"。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 788, "type": "truefalse", "question": "国民党政府在抗日战争中执行的是片面抗战路线。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 789, "type": "truefalse", "question": "新中国成立后的最初三年，中共着重完成了民主革命遗留的任务和国民经济的恢 复。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 790, "type": "truefalse", "question": "坚决做到\"两个维护\"是指坚决维护习近平总书记的核心地位，坚决维护党中央权 威和集中统一领导。（） 公", "options": ["对", "错"], "answer": ["对"]}, {"id": 791, "type": "truefalse", "question": "同盟会的机关刊物是《民报》 (} C", "options": ["对", "错"], "answer": ["对"]}, {"id": 792, "type": "truefalse", "question": "中国的崛起，使中国的GDP已经仅次于美国，其它方面也在大幅进步，已威胁 到了超级大国美国的核心利益，双方的剧烈博弈和竞争一定会陷入\"修昔底德陷阱（指头号 强国与正在崛起的大国之间你死我活般的竞争，常常是两败俱伤，零和博弈）\"。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 793, "type": "truefalse", "question": "近代中国人民的斗争,主要是以发展经济为出发点的。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 794, "type": "truefalse", "question": "1953年基本完成了对农业手工业和资本主义工商业的基本改造。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 795, "type": "truefalse", "question": "中共十八大以来，中共中央提出了\"四个全面\"的战略布局，包括：全面建成小康 社会、全面深化改革、全面依法治国和全面从严治党。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 796, "type": "truefalse", "question": "1901年《辛丑条约》的签订，标志着以慈禧太后为首的清政府已经彻底放弃了 抵抗外国侵略者的念头。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 797, "type": "truefalse", "question": "新民主主义革命的基本目标是实现现代化。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 798, "type": "truefalse", "question": "武昌起义和中国同盟会的领导无关。 O 衣", "options": ["对", "错"], "answer": ["错"]}, {"id": 799, "type": "truefalse", "question": "第一次世界大战是从 1914 年开始到1918年结末，其本质是帝国主义的殖民扩张 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 800, "type": "truefalse", "question": "\"落后就要挨打\"，因此，近代中国人民的反侵略斗争是\"不识时务\"、\"味于大势\"。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 801, "type": "truefalse", "question": "鸦片战争后，中国新兴的民族资本主义经济已经产生，所以也可以称中国社会是 半殖民地半资本主义社会。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 802, "type": "truefalse", "question": "赵尔巽在《清史稿》中说：“秀全以匹夫倡革命，…中国危亡，实兆于此。\"赵尔 巽这一论断对还是错?（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 803, "type": "truefalse", "question": "解放战争初期，国民党的统治方针是，先接收关内，控制华东、华北，而后进兵 关外，以便独占东北。 (0", "options": ["对", "错"], "answer": ["对"]}, {"id": 804, "type": "truefalse", "question": "中国国民经济在 1959年到1961 年发生严重困难，主要是由于大跃进\"和反右倾\" 斗争的错误。（)", "options": ["对", "错"], "answer": ["对"]}, {"id": 805, "type": "truefalse", "question": "人民政协会议的召开，标志着中国的新型政党制度----中国共产党领导的多党合 作和政治协商制度的确立。 程方", "options": ["对", "错"], "answer": ["对"]}, {"id": 806, "type": "truefalse", "question": "中国共产党一经成立，就把实现共产主义作为党的最高理想和最终目标，义无反 顾肩负起实现中华民族伟大复兴的历史使命。（） 修", "options": ["对", "错"], "answer": ["对"]}, {"id": 807, "type": "truefalse", "question": "统一战线对中国革命来说是极为重要的。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 808, "type": "truefalse", "question": "1925年5月，以五卅运动为起点，掀起了全国范围的大革命高潮。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 809, "type": "truefalse", "question": "2007年中国共产党第十七次全国代表大会首次提出中国特色社会主义理论体系 的概念，并作了概括。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 810, "type": "truefalse", "question": "新中国的成立，标志着民族独立、人民解放的历史任务的基本完成和实现国家繁 荣、人民共同富裕的历史任务的开始。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 811, "type": "truefalse", "question": "在1919年五四运动至1949年新中国成立以前这个时期，资产阶级成了民主革命 的领导力量（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 812, "type": "truefalse", "question": "在兴中会会员的入会誓词里，把\"驱除鞑房，恢复中国，创立合众政府\"作为全体 会员必须信守不渝的目标。此为孙中山三民主义思想的最初表达。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 813, "type": "truefalse", "question": "清政府实行\"新政\"和\"预备立宪\"是具有进步意义的政治改革。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 814, "type": "truefalse", "question": "洋务运动在客观上刺激了中国民族资本主义的产生和发展。 () 茶", "options": ["对", "错"], "answer": ["对"]}, {"id": 815, "type": "truefalse", "question": "新民主主义社会是一个凝固不变的，独立的社会形态。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 816, "type": "truefalse", "question": "\"九一八\"事变是一次偶发事件。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 817, "type": "truefalse", "question": "中国的抗日战争得到了世界上所有爱好和平与正义的国家和人民、国际组织及各 种反法西斯力量的同情和支持。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 818, "type": "truefalse", "question": "资产阶级共和国的方案在近代中国行不通。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 819, "type": "truefalse", "question": "1976年10月6日结束了文化大革命。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 820, "type": "truefalse", "question": "辛亥革命推翻了清王朝，但未给帝国主义以沉重打击。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 821, "type": "truefalse", "question": "外国资本主义给中国带来了近代文明。 (}", "options": ["对", "错"], "answer": ["错"]}, {"id": 822, "type": "truefalse", "question": "农村包围城市、武装夺取政权的理论，是对1927 年革命失败后中国共产党领导 的红军和根据地斗争经验的科学概括。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 823, "type": "truefalse", "question": "1952年底，国民经济得到全面恢复和发展。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 824, "type": "truefalse", "question": "三大战役结束的时间顺序为：辽沈，平津，淮海。（）", "options": ["对", "错"], "answer": ["错"]}, {"id": 825, "type": "truefalse", "question": "中国封建社会政治的基本特征是实行高度中央集权的封建专主制度。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 826, "type": "truefalse", "question": "国民党政府的统治是地主阶级和买办性的大资产阶级的统治，与北洋军阀的统治 有本质的区别（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 827, "type": "truefalse", "question": "农民是中国革命的领导力量。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 828, "type": "truefalse", "question": "中国共产党不同国民党实行合作就不会导致国民革命的失败。 O 马院", "options": ["对", "错"], "answer": ["错"]}, {"id": 829, "type": "truefalse", "question": "1895年，严复写了《救亡决论》一文，响亮地喊出了\"救亡\"的口号。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 830, "type": "truefalse", "question": "抗日战争胜利后，国内的主要矛盾是工人阶级同资产阶级的矛盾。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 831, "type": "truefalse", "question": "1945年7月26日中、美、英发表波茨坦公告，敦促日本投降。 () 公", "options": ["对", "错"], "answer": ["对"]}, {"id": 832, "type": "truefalse", "question": "在解放战争中，学生运动不是整个人民民主运动的一部分。 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 833, "type": "truefalse", "question": "国民革命失败后，中国民族资产阶级追随大地主大资产阶级，因而成了革命的对 象。（)", "options": ["对", "错"], "answer": ["错"]}, {"id": 834, "type": "truefalse", "question": "初级农业生产合作社比共同劳动、分工分业而有少量共同财产的常年互助组，具 有更多社会主义因素。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 835, "type": "truefalse", "question": "\"天京事变\"是太平天国革命失败的根本原因。 (O", "options": ["对", "错"], "answer": ["错"]}, {"id": 836, "type": "truefalse", "question": "《辛丑条约》的签订标志着中国社会半殖民地半封建化进一步加深。 ()", "options": ["对", "错"], "answer": ["错"]}, {"id": 837, "type": "truefalse", "question": "十一届三中全会是新中国成立以来党的历史上具有深远意义的伟大转折。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 838, "type": "truefalse", "question": "只有在中国共产党的领导下，走中国特色社会主义道路，才能实现中华民族的伟 大复兴。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 839, "type": "truefalse", "question": "1927年7月大革命失败到 1935年遵义会议召开之前，“左\"倾错误先后出现过3 次，第一次是\"左\"倾盲动错误，第二次是\"左\"倾冒险主义，第三次是\"左\"倾教条主义。（） 公", "options": ["对", "错"], "answer": ["对"]}, {"id": 840, "type": "truefalse", "question": "1949年10月中华人民共和国成立到 1956 年的七年是根本完成社会主义改造时 期 0", "options": ["对", "错"], "answer": ["错"]}, {"id": 841, "type": "truefalse", "question": "帝国主义列强获得了在中国领土上驻兵的特权是通过《辛丑条约》。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 842, "type": "truefalse", "question": "鸦片战争是中国近代史的起点。 ()", "options": ["对", "错"], "answer": ["对"]}, {"id": 843, "type": "truefalse", "question": "中国特色社会主义进入了新时代，这是世情国情党情变化的必然结果，是社会主 要矛盾运动的必然结果，也是党的十八大以来党和国家事业发生历史性变革的结果，是中国 共产党人带领全国各族人民长期不懈奋斗的结果。 （)", "options": ["对", "错"], "answer": ["对"]}, {"id": 844, "type": "truefalse", "question": "中国民族资产阶级与外国帝国主义和本国封建主义之间，既有对立的一面，又有 依附的一面，这种情况决定了中国民族资产阶级在政治上既有革命性的一面，又有反革命性 的一面。（）", "options": ["对", "错"], "answer": ["对"]}, {"id": 845, "type": "truefalse", "question": "第一次世界大战结束后，对我国日益构成主要威胁的外国侵略势力是美国。 (V", "options": ["对", "错"], "answer": ["错"]}, {"id": 846, "type": "truefalse", "question": "新中国最大的历史成就，就是探索、开创、坚持、发展了中国特色社会主义。 ()", "options": ["对", "错"], "answer": ["对"]}];
+</script>
+<script>
+// ===== State =====
+const STATE = {
+  currentTab: 'practice',
+  // Practice mode
+  practiceFilter: 'all',  // 'all' | 'single' | 'multi' | 'truefalse'
+  practiceSearch: '',
+  practiceIndex: 0,
+  practiceShown: false,   // answer revealed?
+  practiceRandom: false,
+  // Quiz mode
+  quizQuestions: [],
+  quizAnswers: {},
+  quizSubmitted: false,
+  quizGraded: {},          // per-question grading status: { qi: true/false }
+  quizTimer: 0,
+  quizTimerInterval: null,
+  quizCount: 20,
+  quizFilter: 'all',
+  // Browse
+  browseFilter: 'all',
+  browseSearch: '',
+  // History (persisted in localStorage)
+  history: {},
+};
+
+// Load history from localStorage
+try {
+  const saved = localStorage.getItem('mental_health_quiz_history');
+  if (saved) STATE.history = JSON.parse(saved);
+} catch(e) {}
+
+function saveHistory() {
+  localStorage.setItem('mental_health_quiz_history', JSON.stringify(STATE.history));
+}
+
+function recordAnswer(qid, userAnswer, isCorrect) {
+  if (!STATE.history[qid]) STATE.history[qid] = { correct: 0, total: 0 };
+  STATE.history[qid].total++;
+  if (isCorrect) STATE.history[qid].correct++;
+  saveHistory();
+  updateHeaderStats();
+}
+
+function getFilteredQuestions(filter, search) {
+  let qs = QUESTION_BANK;
+  if (filter === 'single') qs = qs.filter(q => q.type === 'single');
+  if (filter === 'multi') qs = qs.filter(q => q.type === 'multi');
+  if (filter === 'truefalse') qs = qs.filter(q => q.type === 'truefalse');
+  if (search.trim()) {
+    const s = search.trim().toLowerCase();
+    qs = qs.filter(q => q.question.toLowerCase().includes(s) ||
+      q.options.some(o => o.toLowerCase().includes(s)));
+  }
+  return qs;
+}
+
+function updateHeaderStats() {
+  const done = Object.keys(STATE.history).length;
+  document.getElementById('done-count').textContent = done;
+}
+
+// ===== Tab Switching =====
+function switchTab(tab) {
+  STATE.currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+  ['practice', 'quiz', 'browse', 'stats'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.add('hidden');
+  });
+  document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+  if (tab === 'practice') renderPractice();
+  else if (tab === 'quiz') renderQuizSetup();
+  else if (tab === 'browse') renderBrowse();
+  else if (tab === 'stats') renderStats();
+}
+
+// ===== Type Badge =====
+function typeBadge(type) {
+  if (type === 'single') return '<span class="question-badge badge-single">单选题</span>';
+  if (type === 'multi') return '<span class="question-badge badge-multi">多选题</span>';
+  return '<span class="question-badge badge-tf">判断题</span>';
+}
+
+function typeLabel(type) {
+  if (type === 'single') return '单选';
+  if (type === 'multi') return '多选';
+  return '判断';
+}
+
+// ===== Check Answer =====
+function checkAnswer(question, userAnswer) {
+  const correct = question.answer.sort().join(',');
+  const user = [...userAnswer].sort().join(',');
+  return correct === user;
+}
+
+function normalizeAnswer(q, ans) {
+  // For display: normalize different answer formats
+  if (q.type === 'truefalse') return ans;
+  return ans.join(', ');
+}
+
+// ============================================================
+// PRACTICE MODE
+// ============================================================
+function getPracticeQuestions() {
+  return getFilteredQuestions(STATE.practiceFilter, STATE.practiceSearch);
+}
+
+function getCurrentQuestion() {
+  const qs = getPracticeQuestions();
+  if (qs.length === 0) return null;
+  let idx = STATE.practiceIndex;
+  if (idx < 0) idx = 0;
+  if (idx >= qs.length) idx = qs.length - 1;
+  return qs[idx];
+}
+
+function renderPractice() {
+  const qs = getPracticeQuestions();
+  const q = getCurrentQuestion();
+  const idx = STATE.practiceIndex;
+
+  let html = '';
+
+  // Filters
+  html += '<div class="card"><div class="filters">';
+  const filters = [
+    ['all', '全部'], ['single', '单选'], ['multi', '多选'], ['truefalse', '判断']
+  ];
+  filters.forEach(([val, label]) => {
+    const active = STATE.practiceFilter === val ? ' active' : '';
+    html += `<button class="filter-btn${active}" onclick="setPracticeFilter('${val}')">${label}</button>`;
+  });
+  html += '<span class="filter-separator"></span>';
+  html += `<input class="search-input" placeholder="🔍 搜索题目..." value="${escHtml(STATE.practiceSearch)}"
+    oninput="setPracticeSearch(this.value)">`;
+  html += `<button class="random-btn" onclick="togglePracticeRandom()">${STATE.practiceRandom ? '📋 顺序' : '🎲 随机'}</button>`;
+  html += '</div>';
+
+  // Progress
+  if (qs.length > 0) {
+    const pct = ((idx + 1) / qs.length * 100).toFixed(1);
+    html += `<div class="progress-bar"><div class="fill" style="width:${pct}%"></div></div>`;
+  }
+
+  if (!q) {
+    html += '<div class="question-list-empty">没有匹配的题目，请调整筛选条件</div>';
+  } else {
+    // Meta
+    html += '<div class="question-meta">';
+    html += typeBadge(q.type);
+    html += `<span class="question-number">第 ${idx + 1} / ${qs.length} 题 · ID: ${q.id}</span>`;
+    html += '</div>';
+
+    // Question text
+    html += `<div class="question-text">${escHtml(q.question)}</div>`;
+
+    // Selection hint
+    const hint = q.type === 'multi'
+      ? '<div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">💡 点击选项进行多选，选好后提交</div>'
+      : '<div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">💡 点击选项选择你的答案，然后提交</div>';
+
+    // Options
+    html += hint;
+    html += '<div class="options">';
+    q.options.forEach((opt, oi) => {
+      const letter = String.fromCharCode(65 + oi);
+      html += `<div class="option" data-letter="${letter}" onclick="practiceSelect(this, '${letter}')">${escHtml(opt)}</div>`;
+    });
+    html += '</div>';
+
+    // Submit button — right after options
+    html += '<div class="submit-area">';
+    html += `<button class="submit-btn primary" id="btn-submit" onclick="practiceSubmit()">📝 提交答案</button>`;
+    html += '</div>';
+
+    // Answer reveal area
+    html += '<div class="answer-reveal" id="answer-reveal"></div>';
+
+    // Navigation
+    html += '<div class="nav-buttons">';
+    html += `<button class="nav-btn" onclick="practicePrev()" ${idx <= 0 ? 'disabled' : ''}>← 上一题</button>`;
+    html += `<button class="nav-btn" onclick="practiceNext()" ${idx >= qs.length - 1 ? 'disabled' : ''}>下一题 →</button>`;
+    html += '</div>';
+  }
+
+  html += '</div>'; // close card
+  document.getElementById('tab-practice').innerHTML = html;
+
+  // Reset state
+  STATE.practiceShown = false;
+  const reveal = document.getElementById('answer-reveal');
+  if (reveal) {
+    reveal.classList.remove('show', 'wrong-reveal', 'grade-correct', 'grade-wrong');
+    reveal.innerHTML = '';
+  }
+}
+
+function practiceSelect(el, letter) {
+  if (STATE.practiceShown) return;
+  const q = getCurrentQuestion();
+  if (!q) return;
+
+  if (q.type === 'single' || q.type === 'truefalse') {
+    // Single selection
+    el.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    // Multi selection toggle
+    el.classList.toggle('selected');
+  }
+}
+
+function practiceSubmit() {
+  if (STATE.practiceShown) return;
+  const q = getCurrentQuestion();
+  if (!q) return;
+
+  const reveal = document.getElementById('answer-reveal');
+  const options = document.querySelectorAll('#tab-practice .option');
+  const btn = document.getElementById('btn-submit');
+
+  // Get user's selected answers
+  const selected = [];
+  options.forEach(o => {
+    if (o.classList.contains('selected')) selected.push(o.dataset.letter);
+  });
+
+  // If nothing selected, prompt
+  if (selected.length === 0) {
+    reveal.innerHTML = '<span style="color:var(--warning);">⚠️ 请先选择一个答案再提交</span>';
+    reveal.classList.add('show', 'wrong-reveal');
+    setTimeout(() => {
+      reveal.classList.remove('show', 'wrong-reveal');
+    }, 2000);
+    return;
+  }
+
+  STATE.practiceShown = true;
+  const isCorrect = checkAnswer(q, selected);
+
+  // Mark options
+  options.forEach(o => {
+    const letter = o.dataset.letter;
+    if (q.answer.includes(letter)) {
+      o.classList.add('correct');
+    }
+    if (selected.includes(letter) && !q.answer.includes(letter)) {
+      o.classList.add('wrong');
+    }
+    if (!q.answer.includes(letter)) {
+      o.classList.add('show-correct');
+    }
+  });
+
+  // Show grading result
+  const correctAnswer = normalizeAnswer(q, q.answer);
+  const userAnswer = selected.join(', ');
+
+  if (isCorrect) {
+    reveal.innerHTML = `
+      <div class="grade-banner correct-banner">
+        <span class="grade-icon">🎉</span>
+        <span class="grade-text">回答正确！</span>
+        <span style="font-size:0.9rem;color:var(--success);">答案：${correctAnswer}</span>
+      </div>`;
+    reveal.className = 'answer-reveal show grade-correct';
+  } else {
+    reveal.innerHTML = `
+      <div class="grade-banner wrong-banner">
+        <span class="grade-icon">❌</span>
+        <span class="grade-text">回答错误</span>
+        <div class="grade-compare">
+          <div class="grade-row"><span class="grade-label">你的答案：</span><span class="grade-val wrong-val">${userAnswer}</span></div>
+          <div class="grade-row"><span class="grade-label">正确答案：</span><span class="grade-val correct-val">${correctAnswer}</span></div>
+        </div>
+      </div>`;
+    reveal.className = 'answer-reveal show grade-wrong';
+  }
+
+  // Update button
+  btn.textContent = isCorrect ? '✅ 正确！' : '❌ 错误';
+  btn.className = isCorrect ? 'submit-btn correct' : 'submit-btn wrong';
+  btn.disabled = true;
+
+  // Record
+  recordAnswer(q.id, selected, isCorrect);
+}
+
+function practicePrev() {
+  STATE.practiceShown = false;
+  if (STATE.practiceRandom) {
+    const qs = getPracticeQuestions();
+    STATE.practiceIndex = Math.floor(Math.random() * qs.length);
+  } else {
+    STATE.practiceIndex--;
+  }
+  renderPractice();
+}
+
+function practiceNext() {
+  STATE.practiceShown = false;
+  if (STATE.practiceRandom) {
+    const qs = getPracticeQuestions();
+    STATE.practiceIndex = Math.floor(Math.random() * qs.length);
+  } else {
+    STATE.practiceIndex++;
+  }
+  renderPractice();
+}
+
+function setPracticeFilter(val) {
+  STATE.practiceFilter = val;
+  STATE.practiceIndex = 0;
+  STATE.practiceShown = false;
+  renderPractice();
+}
+
+function setPracticeSearch(val) {
+  STATE.practiceSearch = val;
+  STATE.practiceIndex = 0;
+  STATE.practiceShown = false;
+  renderPractice();
+}
+
+function togglePracticeRandom() {
+  STATE.practiceRandom = !STATE.practiceRandom;
+  STATE.practiceIndex = 0;
+  STATE.practiceShown = false;
+  renderPractice();
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ============================================================
+// QUIZ MODE
+// ============================================================
+function renderQuizSetup() {
+  const total = getFilteredQuestions(STATE.quizFilter, '').length;
+  let html = '<div class="card">';
+  html += '<h3>🏆 答题模式</h3>';
+  html += '<p style="color:var(--text-secondary);margin:12px 0;">从题库中随机抽取题目进行限时答题，检验学习效果。</p>';
+
+  html += '<div class="quiz-setup">';
+  html += '<label>题目类型:</label>';
+  html += `<select onchange="STATE.quizFilter=this.value;renderQuizSetup()">
+    <option value="all" ${STATE.quizFilter==='all'?'selected':''}>全部 (${QUESTION_BANK.length}题)</option>
+    <option value="single" ${STATE.quizFilter==='single'?'selected':''}>单选题 (${QUESTION_BANK.filter(q=>q.type==='single').length}题)</option>
+    <option value="multi" ${STATE.quizFilter==='multi'?'selected':''}>多选题 (${QUESTION_BANK.filter(q=>q.type==='multi').length}题)</option>
+    <option value="truefalse" ${STATE.quizFilter==='truefalse'?'selected':''}>判断题 (${QUESTION_BANK.filter(q=>q.type==='truefalse').length}题)</option>
+  </select>`;
+  html += '<label>题目数量:</label>';
+  html += `<select onchange="STATE.quizCount=parseInt(this.value);renderQuizSetup()">
+    <option value="10" ${STATE.quizCount===10?'selected':''}>10 题</option>
+    <option value="20" ${STATE.quizCount===20?'selected':''}>20 题</option>
+    <option value="30" ${STATE.quizCount===30?'selected':''}>30 题</option>
+    <option value="50" ${STATE.quizCount===50?'selected':''}>50 题</option>
+    <option value="${total}" ${STATE.quizCount===total?'selected':''}>全部 (${total}题)</option>
+  </select>`;
+  html += '</div>';
+
+  html += `<button class="nav-btn primary" onclick="startQuiz()" style="margin-top:12px;">🚀 开始答题</button>`;
+  html += '</div>';
+
+  // If quiz is in progress or submitted, show it
+  if (STATE.quizQuestions.length > 0) {
+    if (STATE.quizSubmitted) {
+      html += renderQuizResults();
+    } else {
+      html += renderQuizQuestions();
+    }
+  }
+
+  document.getElementById('tab-quiz').innerHTML = html;
+}
+
+function startQuiz() {
+  const pool = getFilteredQuestions(STATE.quizFilter, '');
+  const count = Math.min(STATE.quizCount, pool.length);
+  // Shuffle and pick
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  STATE.quizQuestions = shuffled.slice(0, count);
+  STATE.quizAnswers = {};
+  STATE.quizGraded = {};
+  STATE.quizSubmitted = false;
+
+  // Start timer
+  STATE.quizTimer = 0;
+  clearInterval(STATE.quizTimerInterval);
+  STATE.quizTimerInterval = setInterval(() => {
+    STATE.quizTimer++;
+    const el = document.getElementById('quiz-timer');
+    if (el) {
+      const m = Math.floor(STATE.quizTimer / 60);
+      const s = STATE.quizTimer % 60;
+      el.textContent = `⏱ ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      if (STATE.quizTimer > 600) el.classList.add('warning');
+    }
+  }, 1000);
+
+  renderQuizQuestions();
+}
+
+function renderQuizQuestions() {
+  let html = '';
+  const total = STATE.quizQuestions.length;
+  const gradedCount = Object.keys(STATE.quizGraded).length;
+
+  // Timer
+  html += `<div class="card"><div class="quiz-timer" id="quiz-timer">⏱ 00:00</div>`;
+  // Progress
+  html += `<div class="progress-bar"><div class="fill" style="width:${(gradedCount/total*100).toFixed(0)}%"></div></div>`;
+  html += `<div style="text-align:center;color:var(--text-secondary);margin-bottom:12px;">已批改 ${gradedCount} / ${total} 题</div>`;
+
+  // Questions
+  STATE.quizQuestions.forEach((q, qi) => {
+    const graded = STATE.quizGraded[qi];
+    html += `<div class="quiz-question-block" id="quiz-q-${qi}">`;
+    html += `<div class="question-meta" style="margin-top:${qi>0?'24':'0'}">`;
+    html += `${typeBadge(q.type)} <span class="question-number">第 ${qi+1} 题</span>`;
+    if (graded === true) {
+      html += '<span style="color:var(--success);margin-left:8px;font-weight:600;">✅ 正确</span>';
+    } else if (graded === false) {
+      html += '<span style="color:var(--danger);margin-left:8px;font-weight:600;">❌ 错误</span>';
+    }
+    html += '</div>';
+    html += `<div class="question-text">${escHtml(q.question)}</div>`;
+    html += '<div class="options">';
+    q.options.forEach((opt, oi) => {
+      const letter = String.fromCharCode(65 + oi);
+      const userAns = STATE.quizAnswers[qi] || [];
+      let cls = '';
+      if (graded !== undefined) {
+        if (q.answer.includes(letter)) cls = ' correct';
+        else if (userAns.includes(letter)) cls = ' wrong';
+        else cls = ' show-correct';
+      } else if (userAns.includes(letter)) {
+        cls = ' selected';
+      }
+      html += `<div class="option${cls}" data-qi="${qi}" data-letter="${letter}"
+        onclick="${graded === undefined ? `quizSelect(${qi}, '${letter}', this)` : ''}">${escHtml(opt)}</div>`;
+    });
+    html += '</div>';
+
+    // Individual submit button + grading result
+    html += '<div class="submit-area">';
+    if (graded === undefined) {
+      html += `<button class="submit-btn" id="quiz-btn-${qi}" onclick="quizGradeOne(${qi})">📝 提交答案</button>`;
+    }
+    html += `<div class="answer-reveal${graded !== undefined ? ' show' : ''}${graded === false ? ' grade-wrong' : ''}${graded === true ? ' grade-correct' : ''}" id="quiz-reveal-${qi}">`;
+    if (graded === true) {
+      html += `<span style="color:var(--success);font-weight:600;">🎉 回答正确！答案：${normalizeAnswer(q, q.answer)}</span>`;
+    } else if (graded === false) {
+      const userAns = (STATE.quizAnswers[qi] || []).join(', ') || '未选择';
+      html += `<span style="color:var(--danger);font-weight:600;">❌ 你的答案：${userAns}</span>`;
+      html += `<span style="color:var(--success);font-weight:600;margin-left:12px;">正确答案：${normalizeAnswer(q, q.answer)}</span>`;
+    }
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>'; // quiz-question-block
+  });
+
+  html += '<div class="nav-buttons mt-20">';
+  html += `<button class="nav-btn" onclick="resetQuiz()">🔄 重新设置</button>`;
+  html += `<button class="nav-btn primary" onclick="submitQuizFinal()">📊 查看成绩</button>`;
+  html += '</div></div>';
+
+  document.getElementById('tab-quiz').innerHTML = html;
+
+  // Update timer display
+  const timerEl = document.getElementById('quiz-timer');
+  if (timerEl) {
+    const m = Math.floor(STATE.quizTimer / 60);
+    const s = STATE.quizTimer % 60;
+    timerEl.textContent = `⏱ ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  }
+}
+
+function quizSelect(qi, letter, el) {
+  if (STATE.quizSubmitted) return;
+  if (STATE.quizGraded[qi] !== undefined) return;  // already graded, no changes
+  const q = STATE.quizQuestions[qi];
+
+  if (!STATE.quizAnswers[qi]) STATE.quizAnswers[qi] = [];
+
+  if (q.type === 'single' || q.type === 'truefalse') {
+    // Clear previous selection
+    STATE.quizAnswers[qi] = [letter];
+    const parent = el.parentElement;
+    parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    // Toggle multi selection
+    const idx = STATE.quizAnswers[qi].indexOf(letter);
+    if (idx >= 0) {
+      STATE.quizAnswers[qi].splice(idx, 1);
+      el.classList.remove('selected');
+    } else {
+      STATE.quizAnswers[qi].push(letter);
+      el.classList.add('selected');
+    }
+  }
+
+}
+
+// Grade a single question individually
+function quizGradeOne(qi) {
+  const q = STATE.quizQuestions[qi];
+  const userAns = STATE.quizAnswers[qi] || [];
+
+  // If nothing selected, prompt
+  if (userAns.length === 0) {
+    const revealEl = document.getElementById(`quiz-reveal-${qi}`);
+    if (revealEl) {
+      revealEl.innerHTML = '<span style="color:var(--warning);">⚠️ 请先选择一个答案</span>';
+      revealEl.classList.add('show', 'grade-wrong');
+      setTimeout(() => revealEl.classList.remove('show', 'grade-wrong'), 2000);
+    }
+    return;
+  }
+
+  const isCorrect = checkAnswer(q, userAns);
+  STATE.quizGraded[qi] = isCorrect;
+  recordAnswer(q.id, userAns, isCorrect);
+
+  // Re-render just this question block
+  renderQuizQuestions();
+
+  // Check if all are now graded
+  checkQuizComplete();
+}
+
+// Grade all remaining questions at once
+function quizGradeAll() {
+  STATE.quizQuestions.forEach((q, qi) => {
+    if (STATE.quizGraded[qi] === undefined) {
+      const userAns = STATE.quizAnswers[qi] || [];
+      if (userAns.length > 0) {
+        const isCorrect = checkAnswer(q, userAns);
+        STATE.quizGraded[qi] = isCorrect;
+        recordAnswer(q.id, userAns, isCorrect);
+      }
+    }
+  });
+  renderQuizQuestions();
+  checkQuizComplete();
+}
+
+function checkQuizComplete() {
+  // If all questions graded, stop timer
+  if (Object.keys(STATE.quizGraded).length >= STATE.quizQuestions.length) {
+    clearInterval(STATE.quizTimerInterval);
+  }
+}
+
+function submitQuizFinal() {
+  // First, auto-grade all remaining ungraded questions
+  let autoGraded = 0;
+  STATE.quizQuestions.forEach((q, qi) => {
+    if (STATE.quizGraded[qi] === undefined) {
+      const userAns = STATE.quizAnswers[qi] || [];
+      if (userAns.length > 0) {
+        const isCorrect = checkAnswer(q, userAns);
+        STATE.quizGraded[qi] = isCorrect;
+        recordAnswer(q.id, userAns, isCorrect);
+        autoGraded++;
+      }
+    }
+  });
+
+  const graded = Object.keys(STATE.quizGraded).length;
+  const total = STATE.quizQuestions.length;
+  if (graded < total) {
+    if (!confirm(`还有 ${total - graded} 题未作答，确定查看成绩吗？`)) return;
+  }
+
+  STATE.quizSubmitted = true;
+  clearInterval(STATE.quizTimerInterval);
+
+  // Score from graded questions
+  let correct = 0;
+  STATE.quizQuestions.forEach((q, qi) => {
+    if (STATE.quizGraded[qi] === true) correct++;
+  });
+
+  renderQuizSetup();
+}
+
+// Legacy: kept for compatibility
+function submitQuiz() {
+  quizGradeAll();
+  submitQuizFinal();
+}
+
+function renderQuizResults() {
+  const total = STATE.quizQuestions.length;
+  let correct = 0;
+  STATE.quizQuestions.forEach((q, qi) => {
+    if (STATE.quizGraded[qi] === true) correct++;
+  });
+  const pct = total > 0 ? (correct / total * 100).toFixed(1) : 0;
+  const scoreClass = pct >= 80 ? 'good' : (pct >= 60 ? 'ok' : 'bad');
+  const m = Math.floor(STATE.quizTimer / 60);
+  const s = STATE.quizTimer % 60;
+
+  let html = '<div class="card results">';
+  html += `<div class="score ${scoreClass}">${pct}%</div>`;
+  html += `<p style="color:var(--text-secondary)">${pct >= 80 ? '🎉 太棒了！' : (pct >= 60 ? '👍 还不错！' : '💪 继续加油！')}</p>`;
+  html += '<div class="detail">';
+  html += `<div class="detail-item"><div class="num" style="color:var(--success)">${correct}</div><div class="lbl">正确</div></div>`;
+  html += `<div class="detail-item"><div class="num" style="color:var(--danger)">${total - correct}</div><div class="lbl">错误</div></div>`;
+  html += `<div class="detail-item"><div class="num">${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}</div><div class="lbl">用时</div></div>`;
+  html += '</div>';
+
+  // Review incorrect
+  const incorrect = [];
+  STATE.quizQuestions.forEach((q, qi) => {
+    if (STATE.quizGraded[qi] === false) {
+      incorrect.push({q, qi, userAns: STATE.quizAnswers[qi] || []});
+    }
+  });
+
+  if (incorrect.length > 0) {
+    html += '<h3 style="margin-top:24px;text-align:left;">📝 错题回顾</h3>';
+    incorrect.forEach(({q, qi, userAns}) => {
+      html += `<div style="text-align:left;margin-top:16px;padding:12px;background:#fef2f2;border-radius:8px;">`;
+      html += `<strong>${qi+1}.</strong> ${typeBadge(q.type)} ${escHtml(q.question)}`;
+      html += '<div style="margin-top:8px;">';
+      html += `<span style="color:var(--danger);">你的答案: ${userAns.length ? userAns.join(', ') : '未作答'}</span>`;
+      html += `<span style="color:var(--success);margin-left:12px;">正确答案: ${normalizeAnswer(q, q.answer)}</span>`;
+      html += '</div></div>';
+    });
+  }
+
+  html += '<div class="nav-buttons mt-20">';
+  html += `<button class="nav-btn primary" onclick="startQuiz()">🔄 再来一组</button>`;
+  html += `<button class="nav-btn" onclick="resetQuiz()">⚙️ 重新设置</button>`;
+  html += '</div></div>';
+
+  return html;
+}
+
+function resetQuiz() {
+  STATE.quizQuestions = [];
+  STATE.quizAnswers = {};
+  STATE.quizGraded = {};
+  STATE.quizSubmitted = false;
+  STATE.quizTimer = 0;
+  clearInterval(STATE.quizTimerInterval);
+  renderQuizSetup();
+}
+
+// ============================================================
+// BROWSE MODE
+// ============================================================
+function renderBrowse() {
+  const qs = getFilteredQuestions(STATE.browseFilter, STATE.browseSearch);
+  let html = '<div class="card"><div class="filters">';
+  const filters = [['all', '全部'], ['single', '单选'], ['multi', '多选'], ['truefalse', '判断']];
+  filters.forEach(([val, label]) => {
+    const active = STATE.browseFilter === val ? ' active' : '';
+    html += `<button class="filter-btn${active}" onclick="setBrowseFilter('${val}')">${label}</button>`;
+  });
+  html += '<span class="filter-separator"></span>';
+  html += `<input class="search-input" placeholder="🔍 搜索题目..." value="${escHtml(STATE.browseSearch)}"
+    oninput="setBrowseSearch(this.value)">`;
+  html += `<span style="font-size:0.85rem;color:var(--text-secondary);margin-left:8px;">共 ${qs.length} 题</span>`;
+  html += '</div>';
+
+  if (qs.length === 0) {
+    html += '<div class="question-list-empty">没有匹配的题目</div>';
+  } else {
+    // Chunk into pages of 50
+    const pageSize = 50;
+    const totalPages = Math.ceil(qs.length / pageSize);
+    let page = STATE.browsePage || 0;
+    if (page >= totalPages) page = 0;
+    STATE.browsePage = page;
+
+    const start = page * pageSize;
+    const end = Math.min(start + pageSize, qs.length);
+
+    for (let i = start; i < end; i++) {
+      const q = qs[i];
+      const hist = STATE.history[q.id];
+      const accuracy = hist && hist.total > 0 ? ` · 正确率 ${(hist.correct/hist.total*100).toFixed(0)}%` : '';
+      html += `<div class="question-list-item" onclick="browseToQuestion(${q.id})">
+        <span class="idx">#${q.id}</span>
+        <span>${typeBadge(q.type)}</span>
+        <span class="preview">${escHtml(q.question)}</span>
+        <span style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">${hist ? hist.correct + '/' + hist.total : '-'}${accuracy}</span>
+      </div>`;
+    }
+
+    // Pagination
+    if (totalPages > 1) {
+      html += '<div class="nav-buttons" style="justify-content:center;">';
+      html += `<button class="nav-btn" onclick="STATE.browsePage=${page-1};renderBrowse()" ${page===0?'disabled':''}>上一页</button>`;
+      html += `<span style="padding:8px;font-size:0.9rem;">${page+1} / ${totalPages}</span>`;
+      html += `<button class="nav-btn" onclick="STATE.browsePage=${page+1};renderBrowse()" ${page>=totalPages-1?'disabled':''}>下一页</button>`;
+      html += '</div>';
+    }
+  }
+  html += '</div>';
+  document.getElementById('tab-browse').innerHTML = html;
+}
+
+function browseToQuestion(id) {
+  // Switch to practice mode and jump to the question
+  const allQs = getFilteredQuestions(STATE.browseFilter, STATE.browseSearch);
+  const idx = allQs.findIndex(q => q.id === id);
+  if (idx >= 0) {
+    STATE.practiceFilter = STATE.browseFilter;
+    STATE.practiceSearch = STATE.browseSearch;
+    STATE.practiceIndex = idx;
+    STATE.practiceShown = false;
+    switchTab('practice');
+  }
+}
+
+function setBrowseFilter(val) {
+  STATE.browseFilter = val;
+  STATE.browsePage = 0;
+  renderBrowse();
+}
+
+function setBrowseSearch(val) {
+  STATE.browseSearch = val;
+  STATE.browsePage = 0;
+  renderBrowse();
+}
+
+// ============================================================
+// STATS MODE
+// ============================================================
+function renderStats() {
+  const doneCount = Object.keys(STATE.history).length;
+  let totalAttempts = 0, totalCorrect = 0;
+  const byType = { single: {c:0,t:0}, multi: {c:0,t:0}, truefalse: {c:0,t:0} };
+
+  for (const [qid, h] of Object.entries(STATE.history)) {
+    totalAttempts += h.total;
+    totalCorrect += h.correct;
+    const q = QUESTION_BANK.find(q => q.id === parseInt(qid));
+    if (q && byType[q.type]) {
+      byType[q.type].c += h.correct;
+      byType[q.type].t += h.total;
+    }
+  }
+
+  const overallPct = totalAttempts > 0 ? (totalCorrect / totalAttempts * 100).toFixed(1) : '-';
+
+  let html = '<div class="stats-grid">';
+  html += `<div class="stat-card total-stat"><div class="stat-num">${doneCount}</div><div class="stat-lbl">已做题数</div></div>`;
+  html += `<div class="stat-card total-stat"><div class="stat-num">${totalAttempts}</div><div class="stat-lbl">总答题次数</div></div>`;
+  html += `<div class="stat-card total-stat"><div class="stat-num">${overallPct}%</div><div class="stat-lbl">总正确率</div></div>`;
+  html += '</div>';
+
+  html += '<div class="stats-grid">';
+  ['single','multi','truefalse'].forEach(type => {
+    const {c, t} = byType[type];
+    const pct = t > 0 ? (c / t * 100).toFixed(1) : '-';
+    html += `<div class="stat-card ${type}-stat"><div class="stat-num">${pct}%</div><div class="stat-lbl">${typeLabel(type)}题正确率 (${c}/${t})</div></div>`;
+  });
+  html += '</div>';
+
+  // Recent history
+  html += '<div class="card"><h3>📜 最近答题记录</h3>';
+  const recent = Object.entries(STATE.history).sort((a,b) => b[1].total - a[1].total).slice(0, 20);
+  if (recent.length === 0) {
+    html += '<p style="color:var(--text-secondary);margin-top:8px;">还没有答题记录，去刷题吧！</p>';
+  } else {
+    recent.forEach(([qid, h]) => {
+      const q = QUESTION_BANK.find(q => q.id === parseInt(qid));
+      if (!q) return;
+      const pct = h.total > 0 ? (h.correct / h.total * 100).toFixed(0) : 0;
+      const color = pct >= 80 ? 'var(--success)' : (pct >= 50 ? 'var(--warning)' : 'var(--danger)');
+      html += `<div class="question-list-item" onclick="STATESwitchToQuestion(${qid})" style="cursor:pointer;">
+        <span style="color:${color};font-weight:700;min-width:36px;">${pct}%</span>
+        <span>${typeBadge(q.type)}</span>
+        <span class="preview">${escHtml(q.question).substring(0, 60)}...</span>
+        <span style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;">${h.correct}/${h.total}</span>
+      </div>`;
+    });
+  }
+  html += '</div>';
+
+  // Reset button
+  html += '<div class="text-center mt-16">';
+  html += '<button class="nav-btn" onclick="resetStats()" style="color:var(--danger);border-color:var(--danger);">🗑 清除学习记录</button>';
+  html += '</div>';
+
+  document.getElementById('tab-stats').innerHTML = html;
+}
+
+function STATSwitchToQuestion(qid) {
+  STATE.practiceFilter = 'all';
+  STATE.practiceSearch = '';
+  const idx = QUESTION_BANK.findIndex(q => q.id === qid);
+  STATE.practiceIndex = idx >= 0 ? idx : 0;
+  STATE.practiceShown = false;
+  switchTab('practice');
+}
+
+function resetStats() {
+  if (confirm('确定要清除所有学习记录吗？此操作不可撤销。')) {
+    STATE.history = {};
+    saveHistory();
+    updateHeaderStats();
+    renderStats();
+  }
+}
+
+// ===== Init =====
+function init() {
+  document.getElementById('total-count').textContent = QUESTION_BANK.length;
+  updateHeaderStats();
+  renderPractice();
+}
+
+// Run
+init();
+</script>
+</body>
+</html>
