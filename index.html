@@ -1294,6 +1294,7 @@ function renderBrowse() {
   const qs = getFilteredQuestions(STATE.browseFilter, STATE.browseSearch);
   let html = '<div class="card"><div class="filters">';
   const filters = [['all', '全部'], ['single', '单选'], ['multi', '多选'], ['truefalse', '判断'], ['wrong', '📝 错题']];
+  filters.forEach(([val, label]) => {
     const active = STATE.browseFilter === val ? ' active' : '';
     html += `<button class="filter-btn${active}" onclick="setBrowseFilter('${val}')">${label}</button>`;
   });
