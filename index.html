@@ -461,12 +461,12 @@ const STATE = {
 
 // Load history from localStorage
 try {
-  const saved = localStorage.getItem('mental_health_quiz_history');
+  const saved = localStorage.getItem('history_quiz_history');
   if (saved) STATE.history = JSON.parse(saved);
 } catch(e) {}
 
 function saveHistory() {
-  localStorage.setItem('mental_health_quiz_history', JSON.stringify(STATE.history));
+  localStorage.setItem('history_quiz_history', JSON.stringify(STATE.history));
 }
 
 function recordAnswer(qid, userAnswer, isCorrect) {
